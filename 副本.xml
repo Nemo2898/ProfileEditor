@@ -1,0 +1,108 @@
+﻿<?xml version="1.0" encoding="utf-8"?>
+<Person>
+  <XingMing></XingMing><!-- 姓名 -->
+  <XingBie></XingBie><!-- 性别 -->
+  <ChuShengNianYue></ChuShengNianYue><!-- 出生年月 -->
+  <MinZu></MinZu><!-- 民族 -->
+  <JiGuan></JiGuan><!-- 籍贯 -->
+  <ChuShengDi></ChuShengDi><!-- 出生地 -->
+  <RuDangShiJian></RuDangShiJian><!-- 入党时间 -->
+  <CanJiaGongZuoShiJian></CanJiaGongZuoShiJian><!-- 参加工作时间 -->
+  <JianKangZhuangKuang></JianKangZhuangKuang><!-- 健康状况 -->
+  <ZhuanYeJiShuZhiWu></ZhuanYeJiShuZhiWu><!-- 专业技术职务 -->
+  <ShuXiZhuanYeYouHeZhuanChang></ShuXiZhuanYeYouHeZhuanChang><!-- 熟悉专业有何专长 -->
+  <QuanRiZhiJiaoYu_XueLi></QuanRiZhiJiaoYu_XueLi><!-- 全日制教育_学历 -->
+  <QuanRiZhiJiaoYu_XueWei></QuanRiZhiJiaoYu_XueWei><!-- 全日制教育_学位 -->
+  <QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi></QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi><!-- 全日制教育_学历_毕业院校系 -->
+  <QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi></QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi><!-- 全日制教育_学位_毕业院校系 -->
+  <ZaiZhiJiaoYu_XueLi></ZaiZhiJiaoYu_XueLi><!-- 在职教育_学历 -->
+  <ZaiZhiJiaoYu_XueWei></ZaiZhiJiaoYu_XueWei><!-- 在职教育_学位 -->
+  <ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi></ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi><!-- 在职教育_学历_毕业院校系 -->
+  <ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi></ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi><!-- 在职教育_学位_毕业院校系 -->
+  <XianRenZhiWu></XianRenZhiWu><!-- 现任职务 -->
+  <NiRenZhiWu></NiRenZhiWu><!-- 拟任职务 -->
+  <NiMianZhiWu></NiMianZhiWu><!-- 拟免职务 -->
+  <JianLi></JianLi><!-- 简历（多行文本） -->
+  <JiangChengQingKuang></JiangChengQingKuang><!-- 奖惩情况 -->
+  <NianDuKaoHeJieGuo></NianDuKaoHeJieGuo><!-- 年度考核结果 -->
+  <RenMianLiYou></RenMianLiYou><!-- 任免理由 -->
+  <JiaTingChengYuan><!-- 家庭成员列表 -->
+    <Item>
+      <ChengWei></ChengWei><!-- 称谓 -->
+      <XingMing></XingMing><!-- 姓名 -->
+      <ChuShengRiQi></ChuShengRiQi><!-- 出生日期 -->
+      <ZhengZhiMianMao></ZhengZhiMianMao><!-- 政治面貌 -->
+      <GongZuoDanWeiJiZhiWu></GongZuoDanWeiJiZhiWu><!-- 工作单位及职务 -->
+    </Item>
+    <Item>
+      <ChengWei></ChengWei><!-- 称谓 -->
+      <XingMing></XingMing><!-- 姓名 -->
+      <ChuShengRiQi></ChuShengRiQi><!-- 出生日期 -->
+      <ZhengZhiMianMao></ZhengZhiMianMao><!-- 政治面貌 -->
+      <GongZuoDanWeiJiZhiWu></GongZuoDanWeiJiZhiWu><!-- 工作单位及职务 -->
+    </Item>
+    <Item>
+      <ChengWei></ChengWei><!-- 称谓 -->
+      <XingMing></XingMing><!-- 姓名 -->
+      <ChuShengRiQi></ChuShengRiQi><!-- 出生日期 -->
+      <ZhengZhiMianMao></ZhengZhiMianMao><!-- 政治面貌 -->
+      <GongZuoDanWeiJiZhiWu></GongZuoDanWeiJiZhiWu><!-- 工作单位及职务 -->
+    </Item>
+    <Item>
+      <ChengWei></ChengWei><!-- 称谓 -->
+      <XingMing></XingMing><!-- 姓名 -->
+      <ChuShengRiQi></ChuShengRiQi><!-- 出生日期 -->
+      <ZhengZhiMianMao></ZhengZhiMianMao><!-- 政治面貌 -->
+      <GongZuoDanWeiJiZhiWu></GongZuoDanWeiJiZhiWu><!-- 工作单位及职务 -->
+    </Item>
+    <Item>
+      <ChengWei></ChengWei><!-- 称谓 -->
+      <XingMing></XingMing><!-- 姓名 -->
+      <ChuShengRiQi></ChuShengRiQi><!-- 出生日期 -->
+      <ZhengZhiMianMao></ZhengZhiMianMao><!-- 政治面貌 -->
+      <GongZuoDanWeiJiZhiWu></GongZuoDanWeiJiZhiWu><!-- 工作单位及职务 -->
+    </Item>
+    <Item>
+      <ChengWei></ChengWei><!-- 称谓 -->
+      <XingMing></XingMing><!-- 姓名 -->
+      <ChuShengRiQi></ChuShengRiQi><!-- 出生日期 -->
+      <ZhengZhiMianMao></ZhengZhiMianMao><!-- 政治面貌 -->
+      <GongZuoDanWeiJiZhiWu></GongZuoDanWeiJiZhiWu><!-- 工作单位及职务 -->
+    </Item>
+    <Item>
+      <ChengWei></ChengWei><!-- 称谓 -->
+      <XingMing></XingMing><!-- 姓名 -->
+      <ChuShengRiQi></ChuShengRiQi><!-- 出生日期 -->
+      <ZhengZhiMianMao></ZhengZhiMianMao><!-- 政治面貌 -->
+      <GongZuoDanWeiJiZhiWu></GongZuoDanWeiJiZhiWu><!-- 工作单位及职务 -->
+    </Item>
+    <Item>
+      <ChengWei></ChengWei><!-- 称谓 -->
+      <XingMing></XingMing><!-- 姓名 -->
+      <ChuShengRiQi></ChuShengRiQi><!-- 出生日期 -->
+      <ZhengZhiMianMao></ZhengZhiMianMao><!-- 政治面貌 -->
+      <GongZuoDanWeiJiZhiWu></GongZuoDanWeiJiZhiWu><!-- 工作单位及职务 -->
+    </Item>
+    <Item>
+      <ChengWei></ChengWei><!-- 称谓 -->
+      <XingMing></XingMing><!-- 姓名 -->
+      <ChuShengRiQi></ChuShengRiQi><!-- 出生日期 -->
+      <ZhengZhiMianMao></ZhengZhiMianMao><!-- 政治面貌 -->
+      <GongZuoDanWeiJiZhiWu></GongZuoDanWeiJiZhiWu><!-- 工作单位及职务 -->
+    </Item>
+    <Item>
+      <ChengWei></ChengWei><!-- 称谓 -->
+      <XingMing></XingMing><!-- 姓名 -->
+      <ChuShengRiQi></ChuShengRiQi><!-- 出生日期 -->
+      <ZhengZhiMianMao></ZhengZhiMianMao><!-- 政治面貌 -->
+      <GongZuoDanWeiJiZhiWu></GongZuoDanWeiJiZhiWu><!-- 工作单位及职务 -->
+    </Item>
+  </JiaTingChengYuan>
+  <ChengBaoDanWei></ChengBaoDanWei><!-- 呈报单位 -->
+  <JiSuanNianLingShiJian></JiSuanNianLingShiJian><!-- 计算年龄时间 -->
+  <TianBiaoShiJian></TianBiaoShiJian><!-- 填表时间 -->
+  <TianBiaoRen></TianBiaoRen><!-- 填表人 -->
+  <ShenFenZheng></ShenFenZheng><!-- 身份证号 -->
+  <ZhaoPian></ZhaoPian><!-- 证件照（base64） -->
+  <Version>3.2.1.16</Version><!-- 版本号：只读不写，原样保留 -->
+</Person>
