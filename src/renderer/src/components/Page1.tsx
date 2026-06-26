@@ -6,8 +6,13 @@ import { useArchiveStore } from '../store/archive'
 import { TextInput, TextArea, TD, TH } from './FormFields'
 
 export default function Page1(): React.JSX.Element {
-  const data = useArchiveStore((s) => s.data)
+  const data = useArchiveStore((s) => {
+    const doc = s.activeId ? s.docs[s.activeId] : undefined
+    return doc?.data
+  })
   const setField = useArchiveStore((s) => s.setField)
+
+  if (!data) return <div className="p-4 text-slate-400 text-sm">未打开档案</div>
 
   return (
     <div className="p-4 max-w-[210mm] mx-auto bg-white">

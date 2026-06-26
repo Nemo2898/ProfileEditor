@@ -2,11 +2,27 @@
  * 注册所有 IPC handler
  */
 
-import { ipcMain, BrowserWindow } from 'electron'
-import { openLrmx, saveLrmx } from './xml'
+import { ipcMain, BrowserWindow, app } from 'electron'
+import { openLrmx, saveLrmx, getRuntimeDir, newBlankDoc, clearRuntimeDocs } from './xml'
 import { showOpenDialog, showSaveDialog } from './dialog'
 
+/** runtime_docs 目录缓存 */
+let runtimeDir = ''
+
+export function getCachedRuntimeDir(): string {
+  return runtimeDir
+}
+
 export function registerIpcHandlers(win: BrowserWindow): void {
+  // 初始化 runtime_docs
+  runtimeDir = getRuntimeDir(app)
+  clearRuntimeDocs(runtimeDir)
+
+  // 新建空白档案 → 返回临时路径
+  ipcMain.handle('new-blank-doc', () => {
+    return newBlankDoc(runtimeDir)
+  })
+
   // 打开 .lrmx
   ipcMain.handle('open-lrmx', async (_event, filePath: string) => {
     return openLrmx(filePath)
@@ -31,9 +47,11 @@ export function registerIpcHandlers(win: BrowserWindow): void {
   ipcMain.handle('dialog-save', async () => {
     return showSaveDialog(win)
   })
+}
 
-  // 获取模板路径（新建时用 blank.xml）
-  ipcMain.handle('get-blank-path', () => {
-    return null // 留给 main 进程拼接，或直接返回内容
-  })
+/** App 退出时清空临时文件 */
+export function onQuit(): void {
+  if (runtimeDir) {
+    clearRuntimeDocs(runtimeDir)
+  }
 }

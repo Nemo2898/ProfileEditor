@@ -9,6 +9,10 @@ const api = {
   saveLrmx: (data: Record<string, unknown>, filePath: string): Promise<{ success: boolean; error?: string }> =>
     ipcRenderer.invoke('save-lrmx', data, filePath),
 
+  /** 新建空白临时档案 → 返回临时路径 */
+  newBlankDoc: (): Promise<string> =>
+    ipcRenderer.invoke('new-blank-doc'),
+
   /** 打开文件对话框 → 返回选中路径或 null */
   dialogOpen: (): Promise<string | null> => ipcRenderer.invoke('dialog-open'),
 

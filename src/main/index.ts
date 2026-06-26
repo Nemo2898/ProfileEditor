@@ -5,7 +5,7 @@
 import { app, shell, BrowserWindow, session } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-import { registerIpcHandlers } from './ipc/index'
+import { registerIpcHandlers, onQuit } from './ipc/index'
 
 // 阻止多实例
 const gotLock = app.requestSingleInstanceLock()
@@ -89,4 +89,9 @@ app.on('window-all-closed', () => {
   if (process.platform !== 'darwin') {
     app.quit()
   }
+})
+
+// 退出时清理 runtime_docs 临时文件
+app.on('will-quit', () => {
+  onQuit()
 })

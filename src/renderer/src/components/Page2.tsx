@@ -7,9 +7,14 @@ import type { FamilyMember } from '../types/archive'
 import { TextInput, TD, TH } from './FormFields'
 
 export default function Page2(): React.JSX.Element {
-  const data = useArchiveStore((s) => s.data)
+  const data = useArchiveStore((s) => {
+    const doc = s.activeId ? s.docs[s.activeId] : undefined
+    return doc?.data
+  })
   const setField = useArchiveStore((s) => s.setField)
   const addFamilyMember = useArchiveStore((s) => s.addFamilyMember)
+
+  if (!data) return <div className="p-4 text-slate-400 text-sm">未打开档案</div>
   const removeFamilyMember = useArchiveStore((s) => s.removeFamilyMember)
   const updateFamilyMember = useArchiveStore((s) => s.updateFamilyMember)
 

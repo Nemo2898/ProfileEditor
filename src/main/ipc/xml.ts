@@ -3,7 +3,7 @@
  * .lrmx 本质即 XML，内部结构与副本.xml 一致（<Person> 根 + 34 标签）
  */
 
-import { readFileSync, writeFileSync, renameSync, unlinkSync, existsSync } from 'fs'
+import { readFileSync, writeFileSync, renameSync, unlinkSync, existsSync, mkdirSync } from 'fs'
 import { join, dirname } from 'path'
 import { XMLParser, XMLBuilder } from 'fast-xml-parser'
 import { ALLOWED_PERSON_TAGS, ALLOWED_FAMILY_TAGS, validatePersonTags, validateFamilyMemberTags } from '../../renderer/src/types/archive'
@@ -98,5 +98,58 @@ export function saveLrmx(data: Record<string, unknown>, filePath: string): void 
       try { unlinkSync(tmpPath) } catch { /* ignore */ }
     }
     throw err
+  }
+}
+
+/**
+ * 返回 runtime_docs 目录路径，不存在则创建
+ */
+export function getRuntimeDir(app: Electron.App): string {
+  const dir = join(app.getPath('userData'), 'runtime_docs')
+  if (!existsSync(dir)) {
+    mkdirSync(dir, { recursive: true })
+  }
+  return dir
+}
+
+/**
+ * 新建空白临时档案 → 写 runtime_docs/temp_<ts>.lrmx → 返回路径
+ */
+export function newBlankDoc(runtimeDir: string): string {
+  const ts = Date.now()
+  const tempPath = join(runtimeDir, `temp_${ts}.lrmx`)
+
+  // 从空白模板填充（如果模板不存在就用空数据）
+  const person = {
+    XingMing: '', XingBie: '', ChuShengNianYue: '', MinZu: '', JiGuan: '',
+    ChuShengDi: '', RuDangShiJian: '', CanJiaGongZuoShiJian: '',
+    JianKangZhuangKuang: '', ZhuanYeJiShuZhiWu: '', ShuXiZhuanYeYouHeZhuanChang: '',
+    QuanRiZhiJiaoYu_XueLi: '', QuanRiZhiJiaoYu_XueWei: '',
+    QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '', QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '',
+    ZaiZhiJiaoYu_XueLi: '', ZaiZhiJiaoYu_XueWei: '',
+    ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '', ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '',
+    XianRenZhiWu: '', NiRenZhiWu: '', NiMianZhiWu: '',
+    JianLi: '', JiangChengQingKuang: '', NianDuKaoHeJieGuo: '', RenMianLiYou: '',
+    JiaTingChengYuan: { Item: [] },
+    ChengBaoDanWei: '', JiSuanNianLingShiJian: '', TianBiaoShiJian: '',
+    TianBiaoRen: '', ShenFenZheng: '', ZhaoPian: '',
+    Version: '3.2.1.16'
+  }
+
+  saveLrmx(person, tempPath)
+  return tempPath
+}
+
+/**
+ * 清空 runtime_docs 目录下所有临时文件
+ */
+export function clearRuntimeDocs(runtimeDir: string): void {
+  if (!existsSync(runtimeDir)) return
+  const { readdirSync, rmSync } = require('fs')
+  const files = readdirSync(runtimeDir)
+  for (const file of files) {
+    try {
+      rmSync(join(runtimeDir, file), { force: true })
+    } catch { /* ignore */ }
   }
 }
