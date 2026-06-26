@@ -2,7 +2,7 @@
  * ToolPanel — 右侧工具栏（双列）
  */
 
-import { Save, FileOutput, Printer, Settings } from 'lucide-react'
+import { FilePlus, FolderOpen, Save, Files, Eye, Printer, FileText, Table2 } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 interface ToolButtonProps {
@@ -29,16 +29,20 @@ export default function ToolPanel(): React.JSX.Element {
     <div className="flex flex-col bg-slate-900 border-l border-slate-700 px-2 py-4 h-full w-[128px] shrink-0">
       {/* 工具栏：双列网格 */}
       <div className="grid grid-cols-2 gap-1">
+        <ToolButton icon={<FilePlus size={20} />} label="新建" />
+        <ToolButton icon={<FolderOpen size={20} />} label="打开" />
         <ToolButton icon={<Save size={20} />} label="保存" />
-        <ToolButton icon={<FileOutput size={20} />} label="导出PDF" />
-        <ToolButton icon={<Printer size={20} />} label="打印" />
-        <ToolButton icon={<Settings size={20} />} label="设置" />
+        <ToolButton icon={<Files size={20} />} label="另存为" />
+        <ToolButton icon={<Eye size={20} />} label="打印预览" />
+        <ToolButton icon={<Printer size={20} />} label="打印全部" />
+        <ToolButton icon={<FileText size={20} />} label="打印当前页" />
+        <ToolButton icon={<Table2 size={20} />} label="打印当前表" />
       </div>
 
       {/* 分隔 */}
       <div className="w-full h-px bg-slate-700 my-3" />
 
-      {/* 预留空间：后续填充 */}
+      {/* 预留空间 */}
       <div className="flex-1" />
       <div className="text-[10px] text-slate-600 text-center mt-2">v1.0</div>
     </div>
