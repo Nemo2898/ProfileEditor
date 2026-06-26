@@ -2,7 +2,7 @@
  * Electron 主进程 — 窗口创建 / 安全配置 / IPC 注册
  */
 
-import { app, shell, BrowserWindow, session } from 'electron'
+import { app, BrowserWindow, session } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers, onQuit } from './ipc/index'

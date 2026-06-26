@@ -29,7 +29,6 @@ if (typeof window !== 'undefined' && !window.api) {
     windowClose: async () => { window.close() },
     onWindowStateChange: () => () => {}
   }
-  }
 }
 
 createRoot(document.getElementById('root')!).render(
