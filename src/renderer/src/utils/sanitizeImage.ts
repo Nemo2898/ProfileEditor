@@ -4,8 +4,8 @@
  * 2. 解码前大小估算
  * 3. magic bytes 白名单（仅 JPEG / PNG）
  * 4. createImageBitmap 沙箱内解码
- * 5. 校验宽高比与分辨率
- * 6. canvas 重编码（剥 EXIF / 元数据 / 隐写夹带）
+ * 5. 校验分辨率上限
+ * 6. 等比居中裁剪至目标尺寸（强制 4:5）+ 剥 EXIF / 元数据 / 隐写夹带
  */
 
 // 单张图片 base64 最大字符数（约 6.7MB 编码后 ≈ 5MB 原始）
@@ -14,11 +14,8 @@ const MAX_BASE64_LENGTH = 6_800_000
 // 解码后最大像素面积（4000 × 4000 = 16M）
 const MAX_PIXEL_AREA = 16_000_000
 
-// 宽高比允许偏差
-const RATIO_TOLERANCE = 0.02
-
 /**
- * 读取 Blob 前若干字节，转为十六进制字符串
+ * 读取 Blob 前若干字节
  */
 async function readHeaderBytes(blob: Blob, count: number): Promise<Uint8Array> {
   const slice = blob.slice(0, count)
@@ -47,16 +44,43 @@ function checkMagicBytes(header: Uint8Array): string | null {
 }
 
 /**
- * 主入口：返回净化后的 base64（不含 data: 前缀）
+ * 计算等比居中裁剪的源区域
+ * 目标 800×1000（4:5），不拉伸变形，多余部分从两侧/上下裁掉
+ */
+function calcCover(sourceW: number, sourceH: number, targetW: number, targetH: number) {
+  const targetRatio = targetW / targetH
+  const sourceRatio = sourceW / sourceH
+
+  let sx = 0
+  let sy = 0
+  let sw = sourceW
+  let sh = sourceH
+
+  if (sourceRatio > targetRatio) {
+    // 源图偏宽 → 裁左右
+    sw = sourceH * targetRatio
+    sx = (sourceW - sw) / 2
+  } else {
+    // 源图偏高 → 裁上下
+    sh = sourceW / targetRatio
+    sy = (sourceH - sh) / 2
+  }
+
+  return { sx, sy, sw, sh }
+}
+
+/**
+ * 主入口：返回净化后 base64（不含 data: 前缀）
+ * 宽高比不符时自动居中裁剪至目标尺寸，不做拒绝
  *
- * @param base64 - 原始 base64 字符串（来自 XML <ZhaoPian>）
- * @param expectedRatio - 预期宽高比（如 295/413）
+ * @param base64 - 原始 base64 字符串
+ * @param _expectedRatio - 预期宽高比（保留参数兼容，不再拒绝不符图片）
  * @param expectedW - 标准输出宽度（px）
  * @param expectedH - 标准输出高度（px）
  */
 export async function sanitizeImage(
   base64: string,
-  expectedRatio: number,
+  _expectedRatio: number,
   expectedW: number,
   expectedH: number
 ): Promise<string> {
@@ -68,20 +92,16 @@ export async function sanitizeImage(
     throw new Error('图片数据过短')
   }
 
-  // 2. 解码前大小估算（base64 编码膨胀率 ≈ 4/3）
+  // 2. 解码前大小估算
   const estimatedBytes = Math.ceil((base64.length * 3) / 4)
   if (estimatedBytes > MAX_BASE64_LENGTH) {
     throw new Error(`图片解码后过大：估算 ${estimatedBytes} 字节`)
   }
 
-  // 构造 Data URL 以便 fetch
-  // 先试探格式——用前几字节判断，如果已知则跳过；这里用通用方式：
-  // 先用 fetch 加载，再校验真实格式
   let dataUrl: string
   if (base64.startsWith('data:')) {
     dataUrl = base64
   } else {
-    // 尝试以 JPEG 头解码（后续 magic bytes 校验会纠正）
     dataUrl = `data:image/jpeg;base64,${base64}`
   }
 
@@ -98,7 +118,7 @@ export async function sanitizeImage(
     throw new Error('不支持的图片格式：仅接受 JPEG 或 PNG')
   }
 
-  // 4. 沙箱内解码（Chromium 内置解码器）
+  // 4. 沙箱内解码
   const bitmap = await createImageBitmap(blob)
 
   // 5. 校验分辨率上限
@@ -108,16 +128,7 @@ export async function sanitizeImage(
     throw new Error(`图片分辨率过大：${bitmap.width}×${bitmap.height}`)
   }
 
-  // 5. 校验宽高比
-  const actualRatio = bitmap.width / bitmap.height
-  if (Math.abs(actualRatio - expectedRatio) > RATIO_TOLERANCE) {
-    bitmap.close()
-    throw new Error(
-      `图片宽高比不符：实际 ${actualRatio.toFixed(3)}，预期 ${expectedRatio.toFixed(3)}`
-    )
-  }
-
-  // 6. canvas 重编码（归一化尺寸 + 剥元数据）
+  // 6. 居中裁剪 + 重编码（剥元数据）
   const canvas = document.createElement('canvas')
   canvas.width = expectedW
   canvas.height = expectedH
@@ -126,10 +137,13 @@ export async function sanitizeImage(
     bitmap.close()
     throw new Error('无法创建 Canvas 上下文')
   }
-  ctx.drawImage(bitmap, 0, 0, expectedW, expectedH)
+
+  // 自动居中裁剪，强制填充目标尺寸
+  const { sx, sy, sw, sh } = calcCover(bitmap.width, bitmap.height, expectedW, expectedH)
+  ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, expectedW, expectedH)
   bitmap.close()
 
-  // toBlob → PNG（无损，避免二次有损）
+  // toBlob → PNG
   const cleanBlob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((b) => {
       if (b) {
