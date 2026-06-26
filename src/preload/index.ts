@@ -17,7 +17,23 @@ const api = {
   dialogOpen: (): Promise<string | null> => ipcRenderer.invoke('dialog-open'),
 
   /** 另存为对话框 → 返回路径或 null */
-  dialogSave: (): Promise<string | null> => ipcRenderer.invoke('dialog-save')
+  dialogSave: (): Promise<string | null> => ipcRenderer.invoke('dialog-save'),
+
+  /** 窗口最小化 */
+  windowMinimize: (): Promise<void> => ipcRenderer.invoke('window-minimize'),
+
+  /** 窗口最大化/还原 */
+  windowMaximize: (): Promise<void> => ipcRenderer.invoke('window-maximize'),
+
+  /** 关闭窗口 */
+  windowClose: (): Promise<void> => ipcRenderer.invoke('window-close'),
+
+  /** 监听窗口状态变化 */
+  onWindowStateChange: (callback: (maximized: boolean) => void): (() => void) => {
+    const handler = (_event: Electron.IpcRendererEvent, maximized: boolean) => callback(maximized)
+    ipcRenderer.on('window-state-changed', handler)
+    return () => { ipcRenderer.removeListener('window-state-changed', handler) }
+  }
 }
 
 if (process.contextIsolated) {

@@ -23,7 +23,12 @@ if (typeof window !== 'undefined' && !window.api) {
       return '' // 浏览器模式下返回空字符串，EditorLayout 会回退到本地 store
     },
     dialogOpen: async () => null,
-    dialogSave: async () => null
+    dialogSave: async () => null,
+    windowMinimize: async () => undefined,
+    windowMaximize: async () => undefined,
+    windowClose: async () => { window.close() },
+    onWindowStateChange: () => () => {}
+  }
   }
 }
 

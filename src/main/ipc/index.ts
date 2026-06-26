@@ -47,6 +47,24 @@ export function registerIpcHandlers(win: BrowserWindow): void {
   ipcMain.handle('dialog-save', async () => {
     return showSaveDialog(win)
   })
+
+  // 窗口控制
+  ipcMain.handle('window-minimize', () => {
+    win.minimize()
+  })
+  ipcMain.handle('window-maximize', () => {
+    if (win.isMaximized()) {
+      win.unmaximize()
+    } else {
+      win.maximize()
+    }
+  })
+  ipcMain.handle('window-close', () => {
+    win.close()
+  })
+  ipcMain.handle('window-is-maximized', () => {
+    return win.isMaximized()
+  })
 }
 
 /** App 退出时清空临时文件 */

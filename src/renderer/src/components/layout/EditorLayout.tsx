@@ -3,6 +3,7 @@
  */
 
 import { useCallback } from 'react'
+import TitleBar from './TitleBar'
 import TabBar from './TabBar'
 import PageViewer from './PageViewer'
 import ToolPanel from './ToolPanel'
@@ -124,6 +125,7 @@ export default function EditorLayout(): React.JSX.Element {
 
   return (
     <div className="flex flex-col h-screen bg-slate-200">
+      <TitleBar />
       <TabBar
         tabs={tabs}
         activeId={activeId}

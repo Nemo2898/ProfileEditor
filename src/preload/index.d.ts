@@ -4,6 +4,10 @@ export interface LrmxApi {
   newBlankDoc: () => Promise<string>
   dialogOpen: () => Promise<string | null>
   dialogSave: () => Promise<string | null>
+  windowMinimize: () => Promise<void>
+  windowMaximize: () => Promise<void>
+  windowClose: () => Promise<void>
+  onWindowStateChange: (callback: (maximized: boolean) => void) => () => void
 }
 
 declare global {

@@ -25,7 +25,11 @@ function createWindow(): void {
   const mainWindow = new BrowserWindow({
     width: 1280,
     height: 860,
+    minWidth: 900,
+    minHeight: 600,
     show: false,
+    frame: false,
+    titleBarStyle: 'hidden',
     autoHideMenuBar: true,
     webPreferences: {
       preload: join(__dirname, '../preload/index.js'),
@@ -39,6 +43,14 @@ function createWindow(): void {
 
   mainWindow.on('ready-to-show', () => {
     mainWindow.show()
+  })
+
+  // 双击标题栏最大化/还原
+  mainWindow.on('maximize', () => {
+    mainWindow.webContents.send('window-state-changed', true)
+  })
+  mainWindow.on('unmaximize', () => {
+    mainWindow.webContents.send('window-state-changed', false)
   })
 
   // 离线安全：拒绝一切外部导航
