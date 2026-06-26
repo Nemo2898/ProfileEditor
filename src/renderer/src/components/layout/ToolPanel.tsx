@@ -24,15 +24,22 @@ function ToolButton({ icon, label, onClick }: ToolButtonProps): React.JSX.Elemen
   )
 }
 
-export default function ToolPanel(): React.JSX.Element {
+interface ToolPanelProps {
+  onNew: () => void
+  onOpen: () => void
+  onSave: () => void
+  onSaveAs: () => void
+}
+
+export default function ToolPanel({ onNew, onOpen, onSave, onSaveAs }: ToolPanelProps): React.JSX.Element {
   return (
     <div className="flex flex-col bg-slate-900 border-l border-slate-700 px-2 py-4 h-full w-[128px] shrink-0">
       {/* 工具栏：双列网格 */}
       <div className="grid grid-cols-2 gap-1">
-        <ToolButton icon={<FilePlus size={20} />} label="新建" />
-        <ToolButton icon={<FolderOpen size={20} />} label="打开" />
-        <ToolButton icon={<Save size={20} />} label="保存" />
-        <ToolButton icon={<Files size={20} />} label="另存为" />
+        <ToolButton icon={<FilePlus size={20} />} label="新建" onClick={onNew} />
+        <ToolButton icon={<FolderOpen size={20} />} label="打开" onClick={onOpen} />
+        <ToolButton icon={<Save size={20} />} label="保存" onClick={onSave} />
+        <ToolButton icon={<Files size={20} />} label="另存为" onClick={onSaveAs} />
         <ToolButton icon={<Eye size={20} />} label="打印预览" />
         <ToolButton icon={<Printer size={20} />} label="打印全部" />
         <ToolButton icon={<FileText size={20} />} label="打印当前页" />
