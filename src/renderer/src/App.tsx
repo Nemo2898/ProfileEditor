@@ -1,7 +1,7 @@
-import Editor from './components/Editor'
+import EditorLayout from './components/layout/EditorLayout'
 
 function App(): React.JSX.Element {
-  return <Editor />
+  return <EditorLayout />
 }
 
 export default App

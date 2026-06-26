@@ -1,61 +1,13 @@
 /**
- * 固定版式编辑表单 — 干部任免审批表
- * 数据绑定 Zustand store，字段位置与标准表格一致
+ * 第 1 页 — 干部任免审批表（基本信息 / 教育 / 职务 / 简历 / 奖惩 / 考核 / 任免理由）
  */
 
-import { useArchiveStore, FIELD_LABELS } from '../store/archive'
-import type { FamilyMember } from '../types/archive'
+import { useArchiveStore } from '../store/archive'
+import { TextInput, TextArea, TD, TH } from './FormFields'
 
-/* Tailwind class shortcuts for table cells */
-const TD = 'border border-gray-400 px-1 py-0.5 text-sm align-top'
-const TH = 'border border-gray-400 px-1 py-0.5 text-sm bg-gray-100 text-center font-normal'
-
-/** 单行文本输入包装 */
-function TextInput({
-  value,
-  onChange
-}: {
-  value: string
-  onChange: (v: string) => void
-}): React.JSX.Element {
-  return (
-    <input
-      type="text"
-      className="w-full outline-none text-sm bg-transparent"
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  )
-}
-
-/** 多行文本输入 */
-function TextArea({
-  value,
-  onChange,
-  rows = 4
-}: {
-  value: string
-  onChange: (v: string) => void
-  rows?: number
-}): React.JSX.Element {
-  return (
-    <textarea
-      className="w-full outline-none text-sm bg-transparent resize-none"
-      rows={rows}
-      value={value}
-      onChange={(e) => onChange(e.target.value)}
-    />
-  )
-}
-
-export default function Editor(): React.JSX.Element {
+export default function Page1(): React.JSX.Element {
   const data = useArchiveStore((s) => s.data)
   const setField = useArchiveStore((s) => s.setField)
-  const addFamilyMember = useArchiveStore((s) => s.addFamilyMember)
-  const removeFamilyMember = useArchiveStore((s) => s.removeFamilyMember)
-  const updateFamilyMember = useArchiveStore((s) => s.updateFamilyMember)
-
-  const family = data.JiaTingChengYuan.Item
 
   return (
     <div className="p-4 max-w-[210mm] mx-auto bg-white">
@@ -288,118 +240,6 @@ export default function Editor(): React.JSX.Element {
                 value={data.RenMianLiYou}
                 onChange={(v) => setField('RenMianLiYou', v)}
                 rows={2}
-              />
-            </td>
-          </tr>
-        </tbody>
-      </table>
-
-      {/* ======= 家庭成员 ======= */}
-      <div className="mt-3 mb-1 font-bold text-sm">家庭成员及重要社会关系</div>
-      <table className="border-collapse w-full border border-gray-400">
-        <thead>
-          <tr>
-            <th className={TH + ' w-[12%]'}>称谓</th>
-            <th className={TH + ' w-[12%]'}>姓名</th>
-            <th className={TH + ' w-[12%]'}>出生日期</th>
-            <th className={TH + ' w-[12%]'}>政治面貌</th>
-            <th className={TH}>工作单位及职务</th>
-            <th className={TH + ' w-[6%]'}>操作</th>
-          </tr>
-        </thead>
-        <tbody>
-          {family.map((member: FamilyMember, i: number) => (
-            <tr key={i}>
-              <td className={TD}>
-                <TextInput
-                  value={member.ChengWei}
-                  onChange={(v) => updateFamilyMember(i, 'ChengWei', v)}
-                />
-              </td>
-              <td className={TD}>
-                <TextInput
-                  value={member.XingMing}
-                  onChange={(v) => updateFamilyMember(i, 'XingMing', v)}
-                />
-              </td>
-              <td className={TD}>
-                <TextInput
-                  value={member.ChuShengRiQi}
-                  onChange={(v) => updateFamilyMember(i, 'ChuShengRiQi', v)}
-                />
-              </td>
-              <td className={TD}>
-                <TextInput
-                  value={member.ZhengZhiMianMao}
-                  onChange={(v) => updateFamilyMember(i, 'ZhengZhiMianMao', v)}
-                />
-              </td>
-              <td className={TD}>
-                <TextInput
-                  value={member.GongZuoDanWeiJiZhiWu}
-                  onChange={(v) => updateFamilyMember(i, 'GongZuoDanWeiJiZhiWu', v)}
-                />
-              </td>
-              <td className={TD + ' text-center'}>
-                <button
-                  className="text-red-500 text-xs hover:text-red-700"
-                  onClick={() => removeFamilyMember(i)}
-                >
-                  删
-                </button>
-              </td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
-      <button
-        className="mt-1 text-xs text-blue-600 hover:text-blue-800"
-        onClick={addFamilyMember}
-      >
-        + 添加家庭成员
-      </button>
-
-      {/* ======= 底部信息 ======= */}
-      <table className="border-collapse w-full border border-gray-400 mt-4">
-        <tbody>
-          <tr>
-            <td className={TH + ' w-[12%]'}>身份证号</td>
-            <td className={TD + ' w-[38%]'}>
-              <TextInput
-                value={data.ShenFenZheng}
-                onChange={(v) => setField('ShenFenZheng', v)}
-              />
-            </td>
-            <td className={TH + ' w-[12%]'}>呈报单位</td>
-            <td className={TD + ' w-[38%]'}>
-              <TextInput
-                value={data.ChengBaoDanWei}
-                onChange={(v) => setField('ChengBaoDanWei', v)}
-              />
-            </td>
-          </tr>
-          <tr>
-            <td className={TH}>计算年龄时间</td>
-            <td className={TD}>
-              <TextInput
-                value={data.JiSuanNianLingShiJian}
-                onChange={(v) => setField('JiSuanNianLingShiJian', v)}
-              />
-            </td>
-            <td className={TH}>填表时间</td>
-            <td className={TD}>
-              <TextInput
-                value={data.TianBiaoShiJian}
-                onChange={(v) => setField('TianBiaoShiJian', v)}
-              />
-            </td>
-          </tr>
-          <tr>
-            <td className={TH}>填表人</td>
-            <td className={TD} colSpan={3}>
-              <TextInput
-                value={data.TianBiaoRen}
-                onChange={(v) => setField('TianBiaoRen', v)}
               />
             </td>
           </tr>

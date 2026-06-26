@@ -100,10 +100,12 @@ export interface ArchiveStore {
   data: ArchivePerson
   filePath: string | null
   isDirty: boolean
+  currentPage: number
 
   setData: (data: ArchivePerson) => void
   setField: (key: keyof ArchivePerson, value: string) => void
   setFilePath: (path: string | null) => void
+  setCurrentPage: (page: number) => void
   markClean: () => void
   markDirty: () => void
 
@@ -116,6 +118,7 @@ export const useArchiveStore = create<ArchiveStore>((set) => ({
   data: blankPerson(),
   filePath: null,
   isDirty: false,
+  currentPage: 1,
 
   setData: (data) => set({ data, isDirty: false }),
 
@@ -126,6 +129,7 @@ export const useArchiveStore = create<ArchiveStore>((set) => ({
     })),
 
   setFilePath: (path) => set({ filePath: path }),
+  setCurrentPage: (page) => set({ currentPage: page }),
 
   markClean: () => set({ isDirty: false }),
   markDirty: () => set({ isDirty: true }),
