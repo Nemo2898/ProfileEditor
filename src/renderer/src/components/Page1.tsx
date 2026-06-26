@@ -11,9 +11,6 @@ export default function Page1(): React.JSX.Element {
 
   return (
     <div className="p-4 max-w-[210mm] mx-auto bg-white">
-      {/* ======= 标题 ======= */}
-      <div className="text-center text-lg font-bold mb-2">干部任免审批表</div>
-
       <table className="border-collapse w-full border border-gray-400">
         <colgroup>
           <col className="w-[9%]" />
