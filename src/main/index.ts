@@ -1,11 +1,6 @@
 import { app, shell, BrowserWindow, ipcMain } from 'electron'
 import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
-
-app.commandLine.appendSwitch('disable-gpu')
-app.commandLine.appendSwitch('disable-gpu-sandbox')
-app.commandLine.appendSwitch('in-process-gpu')
-app.disableHardwareAcceleration()
 import icon from '../../resources/icon.png?asset'
 
 function createWindow(): void {
