@@ -133,18 +133,21 @@ export default function EditorLayout(): React.JSX.Element {
       />
 
       {tabs.length === 0 ? (
-        /* 空状态 */
-        <div className="flex-1 flex items-center justify-center bg-white">
-          <div className="text-center space-y-4">
-            <div className="text-slate-400 text-6xl select-none">📄</div>
-            <p className="text-slate-500 text-sm">尚未打开任何档案</p>
-            <button
-              onClick={handleNew}
-              className="px-4 py-2 rounded-lg bg-slate-800 text-slate-200 text-sm hover:bg-slate-700 transition-colors cursor-pointer"
-            >
-              新建档案
-            </button>
+        /* 空状态 + ToolPanel */
+        <div className="flex flex-1 overflow-hidden">
+          <div className="flex-1 flex items-center justify-center bg-white">
+            <div className="text-center space-y-4">
+              <div className="text-slate-400 text-6xl select-none">📄</div>
+              <p className="text-slate-500 text-sm">尚未打开任何档案</p>
+              <button
+                onClick={handleNew}
+                className="px-4 py-2 rounded-lg bg-slate-800 text-slate-200 text-sm hover:bg-slate-700 transition-colors cursor-pointer"
+              >
+                新建档案
+              </button>
+            </div>
           </div>
+          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} />
         </div>
       ) : (
         <div className="flex flex-1 overflow-hidden">
