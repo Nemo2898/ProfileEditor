@@ -110,10 +110,8 @@ export default function EditorLayout(): React.JSX.Element {
         const updated = state.docs[doc.id]
         if (updated) {
           useArchiveStore.setState({
-            docs: { ...state.docs, [doc.id]: { ...updated, filePath: targetPath, label } },
-            isDirty: false
+            docs: { ...state.docs, [doc.id]: { ...updated, filePath: targetPath, label, isDirty: false } }
           })
-          markClean()
         }
       } else {
         window.alert('保存失败：' + (result.error || '未知错误'))

@@ -130,7 +130,12 @@ export function newBlankDoc(runtimeDir: string): string {
     ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '', ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '',
     XianRenZhiWu: '', NiRenZhiWu: '', NiMianZhiWu: '',
     JianLi: '', JiangChengQingKuang: '', NianDuKaoHeJieGuo: '', RenMianLiYou: '',
-    JiaTingChengYuan: { Item: [] },
+    JiaTingChengYuan: {
+      Item: Array.from({ length: 10 }, () => ({
+        ChengWei: '', XingMing: '', ChuShengRiQi: '',
+        ZhengZhiMianMao: '', GongZuoDanWeiJiZhiWu: ''
+      }))
+    },
     ChengBaoDanWei: '', JiSuanNianLingShiJian: '', TianBiaoShiJian: '',
     TianBiaoRen: '', ShenFenZheng: '', ZhaoPian: '',
     Version: '3.2.1.16'

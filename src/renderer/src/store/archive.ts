@@ -104,6 +104,12 @@ export const useArchiveStore = create<ArchiveStore>((set, get) => {
     openDoc: (filePath, person) => {
       const id = String(Date.now())
       const label = filePath.split(/[/\\]/).pop() || '档案.lrmx'
+      // 家庭成员不足 10 行时补齐
+      const items = person.JiaTingChengYuan.Item
+      if (items.length < 10) {
+        const pad = Array.from({ length: 10 - items.length }, () => ({ ...EMPTY_FAMILY_MEMBER }))
+        person.JiaTingChengYuan = { Item: [...items, ...pad] }
+      }
       set((state) => ({
         docs: {
           ...state.docs,
