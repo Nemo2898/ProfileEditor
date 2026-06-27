@@ -25,7 +25,7 @@ export default function PageViewer({
   return (
     <div className="flex flex-col h-full">
       {/* 内容区 */}
-      <div className="flex-1 overflow-auto bg-slate-50">{children}</div>
+      <div className="flex-1 overflow-auto bg-stone-50">{children}</div>
 
       {/* 翻页控件 */}
       <div className="flex items-center justify-center gap-4 py-2 bg-slate-100 border-t border-slate-200 select-none shrink-0">

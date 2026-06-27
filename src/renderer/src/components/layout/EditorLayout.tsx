@@ -133,7 +133,7 @@ export default function EditorLayout(): React.JSX.Element {
       {tabs.length === 0 ? (
         /* 空状态 + ToolPanel */
         <div className="flex flex-1 overflow-hidden">
-          <div className="flex-1 flex items-center justify-center bg-slate-50">
+          <div className="flex-1 flex items-center justify-center bg-stone-50">
             <div className="text-center space-y-4">
               <div className="text-slate-400 text-6xl select-none">📄</div>
               <p className="text-slate-500 text-sm">尚未打开任何档案</p>
@@ -149,7 +149,7 @@ export default function EditorLayout(): React.JSX.Element {
         </div>
       ) : (
         <div className="flex flex-1 overflow-hidden">
-          <div className="flex-1 flex flex-col overflow-hidden bg-slate-50">
+          <div className="flex-1 flex flex-col overflow-hidden bg-stone-50">
             <PageViewer currentPage={currentPage} totalPages={2} onPageChange={setCurrentPage}>
               {currentPage === 1 ? <Page1 /> : <Page2 />}
             </PageViewer>
