@@ -79,8 +79,7 @@ try {
   // 教育栏合并策略：拼接学位信息
   // 由于 DOC 模板的学历/学位在一个合并格里，毕业院校系也在一格里
   // 这里拼接供模板使用（如果模板按文档建议用了合并格式）
-  doc.setData(testData)
-  doc.render()
+  doc.render(testData)
 
   const buf = doc.getZip().generate({ type: 'nodebuffer' })
   writeFileSync(outputPath, buf)
