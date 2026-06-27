@@ -2,7 +2,7 @@
  * TabBar — 顶部页签条（已打开档案列表）
  */
 
-import { Plus, X } from 'lucide-react'
+import { X } from 'lucide-react'
 
 interface Tab {
   id: string
@@ -15,10 +15,9 @@ interface TabBarProps {
   activeId: string | null
   onSwitch: (id: string) => void
   onClose: (id: string) => void
-  onNew: () => void
 }
 
-export default function TabBar({ tabs, activeId, onSwitch, onClose, onNew }: TabBarProps): React.JSX.Element {
+export default function TabBar({ tabs, activeId, onSwitch, onClose }: TabBarProps): React.JSX.Element {
   return (
     <div className="flex items-center bg-slate-900 border-b border-slate-700 px-1 gap-0.5 select-none">
       {/* 页签列表 */}
@@ -47,15 +46,6 @@ export default function TabBar({ tabs, activeId, onSwitch, onClose, onNew }: Tab
           )
         })}
       </div>
-
-      {/* 新建按钮 */}
-      <button
-        onClick={onNew}
-        className="flex items-center justify-center w-7 h-7 rounded-md text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
-        title="新建档案"
-      >
-        <Plus size={16} />
-      </button>
     </div>
   )
 }

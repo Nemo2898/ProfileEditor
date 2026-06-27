@@ -127,7 +127,6 @@ export default function EditorLayout(): React.JSX.Element {
         activeId={activeId}
         onSwitch={switchTab}
         onClose={closeTab}
-        onNew={handleNew}
       />
 
       {tabs.length === 0 ? (
