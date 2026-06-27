@@ -86,19 +86,9 @@ export interface ArchiveStore {
 }
 
 export const useArchiveStore = create<ArchiveStore>((set, get) => {
-  // 初始新建一个文档，id=1（兼容已有 init）
-  const initId = '1'
-  const initDoc: DocState = {
-    id: initId,
-    data: blankPerson(),
-    filePath: '',
-    label: '新建档案.lrmx',
-    isDirty: false
-  }
-
   return {
-    docs: { [initId]: initDoc },
-    activeId: initId,
+    docs: {},
+    activeId: null,
     currentPage: 1,
 
     openDoc: (filePath, person) => {
@@ -122,29 +112,38 @@ export const useArchiveStore = create<ArchiveStore>((set, get) => {
 
     newDoc: (tempPath) => {
       const id = String(Date.now())
-      const label = tempPath.split(/[/\\]/).pop() || '新建档案.lrmx'
-      set((state) => ({
+      // 自增命名：新建文档 / 新建文档1 / 新建文档2 ...
+      const state = get()
+      const existingLabels = Object.values(state.docs).map((d) => d.label)
+      let label = '新建文档'
+      let n = 0
+      while (existingLabels.includes(label)) {
+        n++
+        label = `新建文档${n}`
+      }
+      set({
         docs: {
           ...state.docs,
           [id]: { id, data: blankPerson(), filePath: tempPath, label, isDirty: false }
         },
         activeId: id,
         currentPage: 1
-      }))
+      })
     },
 
     switchTab: (id) => set({ activeId: id }),
 
     closeTab: (id) =>
       set((state) => {
-        const keys = Object.keys(state.docs)
-        if (keys.length <= 1) return state // 至少保留一个
         const next = { ...state.docs }
         delete next[id]
+        const remaining = Object.keys(next)
+        if (remaining.length === 0) {
+          return { docs: {} as Record<string, DocState>, activeId: null }
+        }
         let nextActiveId = state.activeId
         if (state.activeId === id) {
-          const idx = keys.indexOf(id)
-          const remaining = Object.keys(next)
+          const idx = Object.keys(state.docs).indexOf(id)
           nextActiveId = remaining[Math.min(idx, remaining.length - 1)]
         }
         return { docs: next, activeId: nextActiveId }
