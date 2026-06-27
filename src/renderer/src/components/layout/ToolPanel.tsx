@@ -2,7 +2,7 @@
  * ToolPanel — 右侧工具栏（双列）
  */
 
-import { FilePlus, FolderOpen, Save, Files, Eye, Printer, FileText, Table2, PencilRuler } from 'lucide-react'
+import { FilePlus, FolderOpen, Save, Files, Eye, Printer, FileText, Table2, PencilRuler, Layers } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 interface ToolButtonProps {
@@ -45,7 +45,8 @@ export default function ToolPanel({ onNew, onOpen, onSave, onSaveAs }: ToolPanel
         <ToolButton icon={<FileText size={20} />} label="打印当前页" />
         <ToolButton icon={<Table2 size={20} />} label="打印当前表" />
       </div>
-      <div className="flex justify-end mt-1">
+      <div className="flex justify-between mt-1">
+        <ToolButton icon={<Layers size={20} />} label="批量生成" />
         <ToolButton icon={<PencilRuler size={20} />} label="批量修改" />
       </div>
 
