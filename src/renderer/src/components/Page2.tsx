@@ -21,7 +21,7 @@ export default function Page2(): React.JSX.Element {
   const family = data.JiaTingChengYuan.Item
 
   return (
-    <div className="p-4 max-w-[210mm] mx-auto bg-white">
+    <div className="p-4 max-w-[210mm] mx-auto bg-slate-50">
       {/* ======= 家庭成员 ======= */}
       <div className="mb-1 font-bold text-sm">家庭成员及重要社会关系</div>
       <table className="border-collapse w-full border border-gray-400">

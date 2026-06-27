@@ -15,7 +15,7 @@ export default function Page1(): React.JSX.Element {
   if (!data) return <div className="p-4 text-slate-400 text-sm">未打开档案</div>
 
   return (
-    <div className="p-4 max-w-[210mm] mx-auto bg-white">
+    <div className="p-4 max-w-[210mm] mx-auto bg-slate-50">
       <table className="border-collapse w-full border border-gray-400">
         <colgroup>
           <col className="w-[9%]" />
