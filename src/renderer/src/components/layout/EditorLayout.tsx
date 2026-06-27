@@ -60,8 +60,8 @@ export default function EditorLayout(): React.JSX.Element {
     if (!doc) return
 
     let targetPath = doc.filePath
-    // 空路径 → 弹出另存为对话框
-    if (!targetPath) {
+    const isTemp = targetPath.includes('/runtime_docs/') || targetPath.includes('\\runtime_docs\\')
+    if (!targetPath || isTemp) {
       targetPath = await window.api.dialogSave()
       if (!targetPath) return
     }
