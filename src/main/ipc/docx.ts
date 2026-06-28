@@ -96,9 +96,9 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
     GongZuoDanWeiJiZhiWu: member.GongZuoDanWeiJiZhiWu
   }))
 
-  // 补足到 10 行
+  // 补足到最少 10 行，多的保留
   const paddedItems = rawItems.length >= FAMILY_ROW_COUNT
-    ? rawItems.slice(0, FAMILY_ROW_COUNT)
+    ? rawItems
     : [...rawItems, ...Array.from({ length: FAMILY_ROW_COUNT - rawItems.length }, () => ({ ...EMPTY_DOCX_FAMILY }))]
 
   return {
