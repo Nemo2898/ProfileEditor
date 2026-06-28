@@ -12,7 +12,18 @@ import Page2 from '../Page2'
 import { useArchiveStore } from '../../store/archive'
 import type { ArchivePerson } from '../../types/archive'
 import { validateBirthDate } from '../../utils/validators'
-import { focusNameField } from '../FormFields'
+
+/** 非阻塞提示：插入临时 DOM，不抢焦点，2.5s 自动消失 */
+function flashError(msg: string): void {
+  const div = document.createElement('div')
+  div.className = 'fixed top-12 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-red-600 text-white text-sm shadow-lg transition-opacity duration-300'
+  div.textContent = msg
+  document.body.appendChild(div)
+  setTimeout(() => {
+    div.style.opacity = '0'
+    setTimeout(() => div.remove(), 300)
+  }, 2500)
+}
 
 /** 保存前校验出生日期格式 */
 function validateSaveBirthDates(data: ArchivePerson): string | null {
@@ -25,12 +36,6 @@ function validateSaveBirthDates(data: ArchivePerson): string | null {
     if (ferr) return `家庭成员 ${i + 1}：${ferr}`
   }
   return null
-}
-
-/** 弹窗后焦点回到姓名栏（setTimeout 让出事件循环给重绘） */
-function alertRestoreFocus(msg: string): void {
-  window.alert(msg)
-  setTimeout(() => focusNameField(), 0)
 }
 
 export default function EditorLayout(): React.JSX.Element {
@@ -81,7 +86,7 @@ export default function EditorLayout(): React.JSX.Element {
 
     const data = doc.data as unknown as ArchivePerson
     const birthErr = validateSaveBirthDates(data)
-    if (birthErr) { alertRestoreFocus(birthErr); return }
+    if (birthErr) { flashError(birthErr); return }
 
     let targetPath = doc.filePath
     const isTemp = targetPath.includes('/runtime_docs/') || targetPath.includes('\\runtime_docs\\')
@@ -121,7 +126,7 @@ export default function EditorLayout(): React.JSX.Element {
 
     const data = doc.data as unknown as ArchivePerson
     const birthErr = validateSaveBirthDates(data)
-    if (birthErr) { alertRestoreFocus(birthErr); return }
+    if (birthErr) { flashError(birthErr); return }
 
     const targetPath = await window.api.dialogSave(data.XingMing?.trim() || undefined)
     if (!targetPath) return
@@ -156,7 +161,7 @@ export default function EditorLayout(): React.JSX.Element {
 
     const data = doc.data as unknown as ArchivePerson
     const birthErr = validateSaveBirthDates(data)
-    if (birthErr) { alertRestoreFocus(birthErr); return }
+    if (birthErr) { flashError(birthErr); return }
 
     const outputPath = await window.api.dialogSaveDocx()
     if (!outputPath) return

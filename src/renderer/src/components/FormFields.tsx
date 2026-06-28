@@ -11,6 +11,7 @@ export const TH = 'border border-gray-400 px-1 py-0.5 text-sm bg-gray-100 text-c
 export function focusNameField(): void {
   const el = document.querySelector('textarea') as HTMLTextAreaElement | null
   if (el) {
+    el.blur()
     el.focus()
     el.setSelectionRange(0, 0)
   }
