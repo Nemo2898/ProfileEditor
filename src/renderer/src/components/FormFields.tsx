@@ -7,19 +7,9 @@ import { useRef, useEffect, useCallback } from 'react'
 export const TD = 'border border-gray-400 px-1 py-0.5 text-sm align-top'
 export const TH = 'border border-gray-400 px-1 py-0.5 text-sm bg-gray-100 text-center font-normal'
 
-/** 记录最后聚焦的输入框及选区，供 alert 后恢复 */
-let lastFocusedElement: HTMLElement | null = null
-let lastSelectionStart = 0
-let lastSelectionEnd = 0
-
-export function restoreLastFocused(): void {
-  const el = lastFocusedElement
-  if (el) {
-    el.focus()
-    if (el instanceof HTMLTextAreaElement || el instanceof HTMLInputElement) {
-      el.setSelectionRange(lastSelectionStart, lastSelectionEnd)
-    }
-  }
+/** alert 后焦点回到第一个输入框（姓名） */
+export function focusNameField(): void {
+  document.querySelector('textarea')?.focus()
 }
 
 /** 通用自适应高度 textarea：rows 为初始行数，内容超出自动撑高 */
@@ -33,15 +23,6 @@ export function TextInput({
   rows?: number
 }): React.JSX.Element {
   const ref = useRef<HTMLTextAreaElement>(null)
-
-  const captureSelection = useCallback(() => {
-    const el = ref.current
-    if (el) {
-      lastFocusedElement = el
-      lastSelectionStart = el.selectionStart
-      lastSelectionEnd = el.selectionEnd
-    }
-  }, [])
 
   const autoGrow = useCallback(() => {
     const el = ref.current
@@ -61,10 +42,6 @@ export function TextInput({
       className="w-full outline-none text-sm bg-transparent text-gray-900 caret-gray-900 resize-none"
       rows={rows}
       value={value}
-      onFocus={captureSelection}
-      onBlur={captureSelection}
-      onKeyUp={captureSelection}
-      onMouseUp={captureSelection}
       onChange={(e) => { onChange(e.target.value); autoGrow() }}
     />
   )
