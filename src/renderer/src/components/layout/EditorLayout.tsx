@@ -12,6 +12,7 @@ import Page2 from '../Page2'
 import { useArchiveStore } from '../../store/archive'
 import type { ArchivePerson } from '../../types/archive'
 import { validateBirthDate } from '../../utils/validators'
+import { restoreLastFocused } from '../FormFields'
 
 /** 保存前校验出生日期格式 */
 function validateSaveBirthDates(data: ArchivePerson): string | null {
@@ -26,11 +27,10 @@ function validateSaveBirthDates(data: ArchivePerson): string | null {
   return null
 }
 
-/** 弹窗后归还焦点，避免 cursor 消失 */
+/** 弹窗后归还焦点到最后编辑的输入框 */
 function alertRestoreFocus(msg: string): void {
-  const el = document.activeElement as HTMLElement | null
   window.alert(msg)
-  el?.focus()
+  restoreLastFocused()
 }
 
 export default function EditorLayout(): React.JSX.Element {

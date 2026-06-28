@@ -7,6 +7,13 @@ import { useRef, useEffect, useCallback } from 'react'
 export const TD = 'border border-gray-400 px-1 py-0.5 text-sm align-top'
 export const TH = 'border border-gray-400 px-1 py-0.5 text-sm bg-gray-100 text-center font-normal'
 
+/** 记录最后聚焦的输入框，供 alert 后恢复焦点 */
+let lastFocusedElement: HTMLElement | null = null
+
+export function restoreLastFocused(): void {
+  lastFocusedElement?.focus()
+}
+
 /** 通用自适应高度 textarea：rows 为初始行数，内容超出自动撑高 */
 export function TextInput({
   value,
@@ -37,6 +44,7 @@ export function TextInput({
       className="w-full outline-none text-sm bg-transparent text-gray-900 caret-gray-900 resize-none overflow-y-hidden"
       rows={rows}
       value={value}
+      onFocus={() => { lastFocusedElement = ref.current }}
       onChange={(e) => { onChange(e.target.value); autoGrow() }}
     />
   )
