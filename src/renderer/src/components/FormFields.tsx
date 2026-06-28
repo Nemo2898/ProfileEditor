@@ -15,7 +15,7 @@ export function TextInput({
   return (
     <input
       type="text"
-      className="w-full outline-none text-sm bg-transparent"
+      className="w-full outline-none text-sm bg-transparent text-gray-900 caret-gray-900"
       value={value}
       onChange={(e) => onChange(e.target.value)}
     />
@@ -33,7 +33,7 @@ export function TextArea({
 }): React.JSX.Element {
   return (
     <textarea
-      className="w-full outline-none text-sm bg-transparent resize-none"
+      className="w-full outline-none text-sm bg-transparent text-gray-900 caret-gray-900 resize-none"
       rows={rows}
       value={value}
       onChange={(e) => onChange(e.target.value)}
