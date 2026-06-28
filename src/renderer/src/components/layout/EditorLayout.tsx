@@ -27,10 +27,10 @@ function validateSaveBirthDates(data: ArchivePerson): string | null {
   return null
 }
 
-/** 弹窗后焦点回到姓名栏 */
+/** 弹窗后焦点回到姓名栏（setTimeout 让出事件循环给重绘） */
 function alertRestoreFocus(msg: string): void {
   window.alert(msg)
-  focusNameField()
+  setTimeout(() => focusNameField(), 0)
 }
 
 export default function EditorLayout(): React.JSX.Element {

@@ -9,7 +9,11 @@ export const TH = 'border border-gray-400 px-1 py-0.5 text-sm bg-gray-100 text-c
 
 /** alert 后焦点回到第一个输入框（姓名） */
 export function focusNameField(): void {
-  document.querySelector('textarea')?.focus()
+  const el = document.querySelector('textarea') as HTMLTextAreaElement | null
+  if (el) {
+    el.focus()
+    el.setSelectionRange(0, 0)
+  }
 }
 
 /** 通用自适应高度 textarea：rows 为初始行数，内容超出自动撑高 */
@@ -39,7 +43,8 @@ export function TextInput({
   return (
     <textarea
       ref={ref}
-      className="w-full outline-none text-sm bg-transparent text-gray-900 caret-gray-900 resize-none"
+      className="w-full outline-none text-sm bg-transparent text-gray-900 resize-none"
+      style={{ caretColor: '#1f2937' }}
       rows={rows}
       value={value}
       onChange={(e) => { onChange(e.target.value); autoGrow() }}
