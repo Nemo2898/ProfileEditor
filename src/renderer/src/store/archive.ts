@@ -8,6 +8,11 @@ import type { ArchivePerson, FamilyMember } from '../types/archive'
 import { EMPTY_FAMILY_MEMBER } from '../types/archive'
 
 /* ---- 空白档案初始值 ---- */
+function nowYYYYMM(): string {
+  const now = new Date()
+  return `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}`
+}
+
 function blankPerson(): ArchivePerson {
   return {
     XingMing: '', XingBie: '', ChuShengNianYue: '', MinZu: '', JiGuan: '',
@@ -20,7 +25,7 @@ function blankPerson(): ArchivePerson {
     XianRenZhiWu: '', NiRenZhiWu: '', NiMianZhiWu: '',
     JianLi: '', JiangChengQingKuang: '', NianDuKaoHeJieGuo: '', RenMianLiYou: '',
     JiaTingChengYuan: { Item: Array.from({ length: 10 }, () => ({ ...EMPTY_FAMILY_MEMBER })) },
-    ChengBaoDanWei: '', JiSuanNianLingShiJian: '', TianBiaoShiJian: '',
+    ChengBaoDanWei: '', JiSuanNianLingShiJian: nowYYYYMM(), TianBiaoShiJian: '',
     TianBiaoRen: '', ShenFenZheng: '', ZhaoPian: '',
     Version: '3.2.1.16'
   }

@@ -119,6 +119,10 @@ export function newBlankDoc(runtimeDir: string): string {
   const ts = Date.now()
   const tempPath = join(runtimeDir, `temp_${ts}.lrmx`)
 
+  // 计算年龄时间默认当天（联网时间不可控时退至本机时间）
+  const now = new Date()
+  const jiSuanShiJian = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}`
+
   // 从空白模板填充（如果模板不存在就用空数据）
   const person = {
     XingMing: '', XingBie: '', ChuShengNianYue: '', MinZu: '', JiGuan: '',
@@ -136,7 +140,7 @@ export function newBlankDoc(runtimeDir: string): string {
         ZhengZhiMianMao: '', GongZuoDanWeiJiZhiWu: ''
       }))
     },
-    ChengBaoDanWei: '', JiSuanNianLingShiJian: '', TianBiaoShiJian: '',
+    ChengBaoDanWei: '', JiSuanNianLingShiJian: jiSuanShiJian, TianBiaoShiJian: '',
     TianBiaoRen: '', ShenFenZheng: '', ZhaoPian: '',
     Version: '3.2.1.16'
   }
