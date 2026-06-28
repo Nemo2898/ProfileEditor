@@ -67,6 +67,17 @@ export function calcAge(birth: string, refDate: string): number {
   return age
 }
 
+/** 家庭成员表固定 10 行——不足的补空 */
+const FAMILY_ROW_COUNT = 10
+
+const EMPTY_DOCX_FAMILY: DocxFamilyMember = {
+  ChengWei: '',
+  XingMing: '',
+  NianLing: '',
+  ZhengZhiMianMao: '',
+  GongZuoDanWeiJiZhiWu: ''
+}
+
 /**
  * 将 LRMX ArchivePerson 转换为 docxtemplater 渲染数据
  *
@@ -77,6 +88,18 @@ export function calcAge(birth: string, refDate: string): number {
  */
 export function prepareDocxData(person: ArchivePerson): DocxRenderData {
   const refDate = person.JiSuanNianLingShiJian || ''
+  const rawItems = (person.JiaTingChengYuan?.Item ?? []).map(member => ({
+    ChengWei: member.ChengWei,
+    XingMing: member.XingMing,
+    NianLing: refDate ? calcAge(member.ChuShengRiQi, refDate) : '',
+    ZhengZhiMianMao: member.ZhengZhiMianMao,
+    GongZuoDanWeiJiZhiWu: member.GongZuoDanWeiJiZhiWu
+  }))
+
+  // 补足到 10 行
+  const paddedItems = rawItems.length >= FAMILY_ROW_COUNT
+    ? rawItems.slice(0, FAMILY_ROW_COUNT)
+    : [...rawItems, ...Array.from({ length: FAMILY_ROW_COUNT - rawItems.length }, () => ({ ...EMPTY_DOCX_FAMILY }))]
 
   return {
     XingMing: person.XingMing,
@@ -106,13 +129,7 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
     JiangChengQingKuang: person.JiangChengQingKuang,
     NianDuKaoHeJieGuo: person.NianDuKaoHeJieGuo,
     RenMianLiYou: person.RenMianLiYou,
-    Item: (person.JiaTingChengYuan?.Item ?? []).map(member => ({
-      ChengWei: member.ChengWei,
-      XingMing: member.XingMing,
-      NianLing: refDate ? calcAge(member.ChuShengRiQi, refDate) : '',
-      ZhengZhiMianMao: member.ZhengZhiMianMao,
-      GongZuoDanWeiJiZhiWu: member.GongZuoDanWeiJiZhiWu
-    })),
+    Item: paddedItems,
     ChengBaoDanWei: person.ChengBaoDanWei,
     TianBiaoShiJian: person.TianBiaoShiJian,
     TianBiaoRen: person.TianBiaoRen,
