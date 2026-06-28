@@ -83,30 +83,33 @@ export function validateIdNumber(id: string): string | null {
 }
 
 /**
- * 简便日期格式校验（YYYY-MM 或 YYYY.MM 或 YYYY 或 YYYY-MM-DD）
+ * 简便日期格式校验（YYYY-MM 或 YYYY.MM 或 YYYY 或 YYYY-MM-DD 或 YYYY.MM.DD）
  */
 export function validateDate(value: string): string | null {
   if (!value || value.trim().length === 0) {
-    return null // 非必填时允许空
+    return null
   }
   const trimmed = value.trim()
-  // YYYY-MM-DD
-  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) {
-    return null
-  }
-  // YYYY-MM
-  if (/^\d{4}-\d{2}$/.test(trimmed)) {
-    return null
-  }
-  // YYYY.MM
-  if (/^\d{4}\.\d{2}$/.test(trimmed)) {
-    return null
-  }
-  // YYYY
-  if (/^\d{4}$/.test(trimmed)) {
-    return null
-  }
+  if (/^\d{4}-\d{2}-\d{2}$/.test(trimmed)) return null
+  if (/^\d{4}-\d{2}$/.test(trimmed)) return null
+  if (/^\d{4}$/.test(trimmed)) return null
+  if (/^\d{4}\.\d{2}\.\d{2}$/.test(trimmed)) return null
+  if (/^\d{4}\.\d{2}$/.test(trimmed)) return null
   return `日期格式不正确：${value}`
+}
+
+/**
+ * 出生日期 YYYY.MM.DD 严格校验（用于 ChuShengNianYue / ChuShengRiQi）
+ * 不允许空、不允许短格式
+ */
+export function validateBirthDate(value: string): string | null {
+  if (!value || value.trim().length === 0) {
+    return '年龄格式错误 请按照年份.月份.日期'
+  }
+  if (!/^\d{4}\.\d{2}\.\d{2}$/.test(value.trim())) {
+    return '年龄格式错误 请按照年份.月份.日期'
+  }
+  return null
 }
 
 /**
@@ -146,10 +149,10 @@ export function validateFamilyMember(member: FamilyMember, index: number): strin
   if (!member.XingMing.trim()) {
     errors.push(`家庭成员 ${index + 1}：姓名为必填项`)
   }
-  // 日期格式校验
-  const dateErr = validateDate(member.ChuShengRiQi.trim())
-  if (dateErr) {
-    errors.push(`家庭成员 ${index + 1}：${dateErr}`)
+  // 出生日期格式验证（YYYY.MM.DD）
+  const birthErr = validateBirthDate(member.ChuShengRiQi.trim())
+  if (birthErr) {
+    errors.push(`家庭成员 ${index + 1}：${birthErr}`)
   }
   return errors
 }

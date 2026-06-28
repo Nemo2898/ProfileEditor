@@ -11,6 +11,20 @@ import Page1 from '../Page1'
 import Page2 from '../Page2'
 import { useArchiveStore } from '../../store/archive'
 import type { ArchivePerson } from '../../types/archive'
+import { validateBirthDate } from '../../utils/validators'
+
+/** 保存前校验出生日期格式 */
+function validateSaveBirthDates(data: ArchivePerson): string | null {
+  const err = validateBirthDate(data.ChuShengNianYue)
+  if (err) return `本人出生年月：${err}`
+  for (let i = 0; i < (data.JiaTingChengYuan?.Item?.length ?? 0); i++) {
+    const m = data.JiaTingChengYuan.Item[i]
+    if (!m.ChengWei.trim() && !m.XingMing.trim() && !m.ChuShengRiQi.trim()) continue
+    const ferr = validateBirthDate(m.ChuShengRiQi)
+    if (ferr) return `家庭成员 ${i + 1}：${ferr}`
+  }
+  return null
+}
 
 export default function EditorLayout(): React.JSX.Element {
   const docs = useArchiveStore((s) => s.docs)
@@ -58,6 +72,10 @@ export default function EditorLayout(): React.JSX.Element {
     const doc = docValues.find((d) => d.id === activeId)
     if (!doc) return
 
+    const data = doc.data as unknown as ArchivePerson
+    const birthErr = validateSaveBirthDates(data)
+    if (birthErr) { window.alert(birthErr); return }
+
     let targetPath = doc.filePath
     const isTemp = targetPath.includes('/runtime_docs/') || targetPath.includes('\\runtime_docs\\')
     if (!targetPath || isTemp) {
@@ -93,6 +111,10 @@ export default function EditorLayout(): React.JSX.Element {
     const docValues = Object.values(useArchiveStore.getState().docs)
     const doc = docValues.find((d) => d.id === activeId)
     if (!doc) return
+
+    const data = doc.data as unknown as ArchivePerson
+    const birthErr = validateSaveBirthDates(data)
+    if (birthErr) { window.alert(birthErr); return }
 
     const targetPath = await window.api.dialogSave()
     if (!targetPath) return

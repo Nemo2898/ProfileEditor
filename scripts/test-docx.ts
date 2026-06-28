@@ -28,7 +28,7 @@ if (!exists(templatePath)) {
 const testPerson: ArchivePerson = {
   XingMing: '欧阳娜娜·买买提江·图尔逊别克',
   XingBie: '女',
-  ChuShengNianYue: '1990.01',
+  ChuShengNianYue: '1990.01.15',
   MinZu: '塔吉克族',
   JiGuan: '新疆维吾尔自治区伊犁哈萨克自治州塔城市',
   ChuShengDi: '新疆维吾尔自治区伊犁哈萨克自治州塔城市巴克图口岸',
@@ -54,11 +54,11 @@ const testPerson: ArchivePerson = {
   RenMianLiYou: '因工作需要，经自治区党委组织部研究决定进行干部交流轮岗',
   JiaTingChengYuan: {
     Item: [
-      { ChengWei: '妻子', XingMing: '阿依古丽·吐尔逊·买买提明', ChuShengRiQi: '1991.05', ZhengZhiMianMao: '群众', GongZuoDanWeiJiZhiWu: '新疆维吾尔自治区人民医院心内科副主任医师' },
-      { ChengWei: '儿子', XingMing: '欧阳江·买买提江·图尔逊别克', ChuShengRiQi: '2018.03', ZhengZhiMianMao: '少先队员', GongZuoDanWeiJiZhiWu: '乌鲁木齐市第一小学三年级二班学生' },
-      { ChengWei: '父亲', XingMing: '买买提江·图尔逊·库尔班', ChuShengRiQi: '1955.08', ZhengZhiMianMao: '中共党员（1976年入党）', GongZuoDanWeiJiZhiWu: '新疆大学历史系退休教授（博士生导师）' },
-      { ChengWei: '母亲', XingMing: '帕提古丽·阿不都热依木·艾合买提', ChuShengRiQi: '1958.12', ZhengZhiMianMao: '群众', GongZuoDanWeiJiZhiWu: '乌鲁木齐市友谊医院退休护士长' },
-      { ChengWei: '岳父', XingMing: '吐尔逊·司马义·阿不都拉', ChuShengRiQi: '1952.03', ZhengZhiMianMao: '中共党员（1971年入党）', GongZuoDanWeiJiZhiWu: '新疆维吾尔自治区人民政府办公厅退休巡视员' }
+      { ChengWei: '妻子', XingMing: '阿依古丽·吐尔逊·买买提明', ChuShengRiQi: '1991.05.20', ZhengZhiMianMao: '群众', GongZuoDanWeiJiZhiWu: '新疆维吾尔自治区人民医院心内科副主任医师' },
+      { ChengWei: '儿子', XingMing: '欧阳江·买买提江·图尔逊别克', ChuShengRiQi: '2018.03.10', ZhengZhiMianMao: '少先队员', GongZuoDanWeiJiZhiWu: '乌鲁木齐市第一小学三年级二班学生' },
+      { ChengWei: '父亲', XingMing: '买买提江·图尔逊·库尔班', ChuShengRiQi: '1955.08.25', ZhengZhiMianMao: '中共党员（1976年入党）', GongZuoDanWeiJiZhiWu: '新疆大学历史系退休教授（博士生导师）' },
+      { ChengWei: '母亲', XingMing: '帕提古丽·阿不都热依木·艾合买提', ChuShengRiQi: '1958.12.03', ZhengZhiMianMao: '群众', GongZuoDanWeiJiZhiWu: '乌鲁木齐市友谊医院退休护士长' },
+      { ChengWei: '岳父', XingMing: '吐尔逊·司马义·阿不都拉', ChuShengRiQi: '1952.03.18', ZhengZhiMianMao: '中共党员（1971年入党）', GongZuoDanWeiJiZhiWu: '新疆维吾尔自治区人民政府办公厅退休巡视员' }
     ]
   },
   ChengBaoDanWei: '新疆维吾尔自治区工业和信息化厅人事处',
