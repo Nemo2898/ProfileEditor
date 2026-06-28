@@ -1,0 +1,141 @@
+/**
+ * DOCX 导出 — docxtemplater 模板填充
+ *
+ * 数据链路：LRMX ArchivePerson → prepareDocxData(运算年龄/拍平家庭/跳过证件号) → doc.render() → .docx
+ */
+
+import { readFileSync, writeFileSync } from 'fs'
+import PizZip from 'pizzip'
+import Docxtemplater from 'docxtemplater'
+import type { ArchivePerson } from '../../renderer/src/types/archive'
+
+/** DOCX 渲染用的扁平家庭成员（年龄已计算） */
+export interface DocxFamilyMember {
+  ChengWei: string
+  XingMing: string
+  NianLing: number | string
+  ZhengZhiMianMao: string
+  GongZuoDanWeiJiZhiWu: string
+}
+
+/** 最终的 DOCX 渲染数据 */
+export interface DocxRenderData {
+  XingMing: string
+  XingBie: string
+  ChuShengNianYue: string
+  NianLing: number | string
+  MinZu: string
+  JiGuan: string
+  ChuShengDi: string
+  RuDangShiJian: string
+  CanJiaGongZuoShiJian: string
+  JianKangZhuangKuang: string
+  ZhuanYeJiShuZhiWu: string
+  ShuXiZhuanYeYouHeZhuanChang: string
+  QuanRiZhiJiaoYu_XueLi: string
+  QuanRiZhiJiaoYu_XueWei: string
+  QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: string
+  QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: string
+  ZaiZhiJiaoYu_XueLi: string
+  ZaiZhiJiaoYu_XueWei: string
+  ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: string
+  ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: string
+  XianRenZhiWu: string
+  NiRenZhiWu: string
+  NiMianZhiWu: string
+  JianLi: string
+  JiangChengQingKuang: string
+  NianDuKaoHeJieGuo: string
+  RenMianLiYou: string
+  Item: DocxFamilyMember[]
+  ChengBaoDanWei: string
+  TianBiaoShiJian: string
+  TianBiaoRen: string
+  ZhaoPian: string
+}
+
+/**
+ * 从出生日期和计算年龄参考时间推算周岁
+ * @param birth e.g. "1990.01" | "1991.05"
+ * @param refDate e.g. "2026.06"
+ */
+export function calcAge(birth: string, refDate: string): number {
+  const [by, bm] = birth.split('.').map(s => parseInt(s, 10))
+  const [ry, rm] = refDate.split('.').map(s => parseInt(s, 10))
+  let age = ry - by
+  if (rm < bm) age--
+  return age
+}
+
+/**
+ * 将 LRMX ArchivePerson 转换为 docxtemplater 渲染数据
+ *
+ * 做了三件事：
+ * 1. 年龄运算：本人从 ChuShengNianYue + JiSuanNianLingShiJian 算，家属从 ChuShengRiQi 算
+ * 2. 拍平家庭数组：JiaTingChengYuan.Item → 根层 Item，丢弃 ChuShengRiQi（DOCX 只显年龄）
+ * 3. 跳过 ShenFenZheng、JiSuanNianLingShiJian、Version（纸质表格无这些栏）
+ */
+export function prepareDocxData(person: ArchivePerson): DocxRenderData {
+  const refDate = person.JiSuanNianLingShiJian || ''
+
+  return {
+    XingMing: person.XingMing,
+    XingBie: person.XingBie,
+    ChuShengNianYue: person.ChuShengNianYue,
+    NianLing: refDate ? calcAge(person.ChuShengNianYue, refDate) : '',
+    MinZu: person.MinZu,
+    JiGuan: person.JiGuan,
+    ChuShengDi: person.ChuShengDi,
+    RuDangShiJian: person.RuDangShiJian,
+    CanJiaGongZuoShiJian: person.CanJiaGongZuoShiJian,
+    JianKangZhuangKuang: person.JianKangZhuangKuang,
+    ZhuanYeJiShuZhiWu: person.ZhuanYeJiShuZhiWu,
+    ShuXiZhuanYeYouHeZhuanChang: person.ShuXiZhuanYeYouHeZhuanChang,
+    QuanRiZhiJiaoYu_XueLi: person.QuanRiZhiJiaoYu_XueLi,
+    QuanRiZhiJiaoYu_XueWei: person.QuanRiZhiJiaoYu_XueWei,
+    QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: person.QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi,
+    QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: person.QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi,
+    ZaiZhiJiaoYu_XueLi: person.ZaiZhiJiaoYu_XueLi,
+    ZaiZhiJiaoYu_XueWei: person.ZaiZhiJiaoYu_XueWei,
+    ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: person.ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi,
+    ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: person.ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi,
+    XianRenZhiWu: person.XianRenZhiWu,
+    NiRenZhiWu: person.NiRenZhiWu,
+    NiMianZhiWu: person.NiMianZhiWu,
+    JianLi: person.JianLi,
+    JiangChengQingKuang: person.JiangChengQingKuang,
+    NianDuKaoHeJieGuo: person.NianDuKaoHeJieGuo,
+    RenMianLiYou: person.RenMianLiYou,
+    Item: (person.JiaTingChengYuan?.Item ?? []).map(member => ({
+      ChengWei: member.ChengWei,
+      XingMing: member.XingMing,
+      NianLing: refDate ? calcAge(member.ChuShengRiQi, refDate) : '',
+      ZhengZhiMianMao: member.ZhengZhiMianMao,
+      GongZuoDanWeiJiZhiWu: member.GongZuoDanWeiJiZhiWu
+    })),
+    ChengBaoDanWei: person.ChengBaoDanWei,
+    TianBiaoShiJian: person.TianBiaoShiJian,
+    TianBiaoRen: person.TianBiaoRen,
+    ZhaoPian: person.ZhaoPian
+  }
+}
+
+/**
+ * 将渲染数据填入模板 → 写出 .docx
+ * @param data 经 prepareDocxData 转换后的数据
+ * @param templatePath 模板 .docx 路径
+ * @param outputPath 输出 .docx 路径
+ */
+export function renderDocx(data: DocxRenderData, templatePath: string, outputPath: string): void {
+  const template = readFileSync(templatePath)
+  const zip = new PizZip(template)
+  const doc = new Docxtemplater(zip, {
+    paragraphLoop: true,
+    linebreaks: true
+  })
+
+  doc.render(data)
+
+  const buf = doc.getZip().generate({ type: 'nodebuffer' })
+  writeFileSync(outputPath, buf)
+}

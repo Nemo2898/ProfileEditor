@@ -4,6 +4,7 @@ export interface LrmxApi {
   newBlankDoc: () => Promise<string>
   dialogOpen: () => Promise<string | null>
   dialogSave: () => Promise<string | null>
+  exportDocx: (data: Record<string, unknown>, outputPath: string) => Promise<{ success: boolean; error?: string }>
   windowMinimize: () => Promise<void>
   windowMaximize: () => Promise<void>
   windowClose: () => Promise<void>

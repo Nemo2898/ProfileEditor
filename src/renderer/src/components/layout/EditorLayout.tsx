@@ -119,6 +119,28 @@ export default function EditorLayout(): React.JSX.Element {
     }
   }, [activeId])
 
+  // 导出 DOCX
+  const handleExportDocx = useCallback(async () => {
+    const docValues = Object.values(useArchiveStore.getState().docs)
+    const doc = docValues.find((d) => d.id === activeId)
+    if (!doc) return
+
+    const outputPath = await window.api.dialogSave()
+    if (!outputPath) return
+
+    try {
+      const result = await window.api.exportDocx(
+        doc.data as unknown as Record<string, unknown>,
+        outputPath
+      )
+      if (!result.success) {
+        window.alert('导出失败：' + (result.error || '未知错误'))
+      }
+    } catch (err) {
+      window.alert('导出失败：' + String(err))
+    }
+  }, [activeId])
+
   return (
     <div className="flex flex-col h-screen bg-slate-200">
       <TitleBar />
@@ -144,7 +166,7 @@ export default function EditorLayout(): React.JSX.Element {
               </button>
             </div>
           </div>
-          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} />
+          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} onExportDocx={handleExportDocx} />
         </div>
       ) : (
         <div className="flex flex-1 overflow-hidden">
@@ -153,7 +175,7 @@ export default function EditorLayout(): React.JSX.Element {
               {currentPage === 1 ? <Page1 /> : <Page2 />}
             </PageViewer>
           </div>
-          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} />
+          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} onExportDocx={handleExportDocx} />
         </div>
       )}
     </div>

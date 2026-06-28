@@ -28,6 +28,10 @@ const api = {
   /** 关闭窗口 */
   windowClose: (): Promise<void> => ipcRenderer.invoke('window-close'),
 
+  /** 导出 DOCX：传入档案数据 + 输出路径 → 写 .docx */
+  exportDocx: (data: Record<string, unknown>, outputPath: string): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('export-docx', data, outputPath),
+
   /** 监听窗口状态变化 */
   onWindowStateChange: (callback: (maximized: boolean) => void): (() => void) => {
     const handler = (_event: Electron.IpcRendererEvent, maximized: boolean) => callback(maximized)
