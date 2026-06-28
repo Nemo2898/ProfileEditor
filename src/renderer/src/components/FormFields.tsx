@@ -7,16 +7,6 @@ import { useRef, useEffect, useCallback } from 'react'
 export const TD = 'border border-gray-400 px-1 py-0.5 text-sm align-top'
 export const TH = 'border border-gray-400 px-1 py-0.5 text-sm bg-gray-100 text-center font-normal'
 
-/** alert 后焦点回到第一个输入框（姓名） */
-export function focusNameField(): void {
-  const el = document.querySelector('textarea') as HTMLTextAreaElement | null
-  if (el) {
-    el.blur()
-    el.focus()
-    el.setSelectionRange(0, 0)
-  }
-}
-
 /** 通用自适应高度 textarea：rows 为初始行数，内容超出自动撑高 */
 export function TextInput({
   value,

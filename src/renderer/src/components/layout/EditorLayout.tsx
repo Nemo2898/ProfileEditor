@@ -12,18 +12,7 @@ import Page2 from '../Page2'
 import { useArchiveStore } from '../../store/archive'
 import type { ArchivePerson } from '../../types/archive'
 import { validateBirthDate } from '../../utils/validators'
-
-/** 非阻塞提示：插入临时 DOM，不抢焦点，2.5s 自动消失 */
-function flashError(msg: string): void {
-  const div = document.createElement('div')
-  div.className = 'fixed top-12 left-1/2 -translate-x-1/2 z-50 px-4 py-2 rounded-lg bg-red-600 text-white text-sm shadow-lg transition-opacity duration-300'
-  div.textContent = msg
-  document.body.appendChild(div)
-  setTimeout(() => {
-    div.style.opacity = '0'
-    setTimeout(() => div.remove(), 300)
-  }, 2500)
-}
+import { flashError } from '../../utils/flash'
 
 /** 保存前校验出生日期格式 */
 function validateSaveBirthDates(data: ArchivePerson): string | null {
@@ -74,7 +63,7 @@ export default function EditorLayout(): React.JSX.Element {
       const person = (await window.api.openLrmx(path)) as unknown as ArchivePerson
       openDoc(path, person)
     } catch (err) {
-      window.alert('打开失败：' + String(err))
+      flashError('打开失败：' + String(err))
     }
   }, [openDoc])
 
@@ -111,10 +100,10 @@ export default function EditorLayout(): React.JSX.Element {
           })
         }
       } else {
-        window.alert('保存失败：' + (result.error || '未知错误'))
+        flashError('保存失败：' + (result.error || '未知错误'))
       }
     } catch (err) {
-      window.alert('保存失败：' + String(err))
+      flashError('保存失败：' + String(err))
     }
   }, [activeId])
 
@@ -146,10 +135,10 @@ export default function EditorLayout(): React.JSX.Element {
           })
         }
       } else {
-        window.alert('保存失败：' + (result.error || '未知错误'))
+        flashError('保存失败：' + (result.error || '未知错误'))
       }
     } catch (err) {
-      window.alert('保存失败：' + String(err))
+      flashError('保存失败：' + String(err))
     }
   }, [activeId])
 
@@ -172,10 +161,10 @@ export default function EditorLayout(): React.JSX.Element {
         outputPath
       )
       if (!result.success) {
-        window.alert('导出失败：' + (result.error || '未知错误'))
+        flashError('导出失败：' + (result.error || '未知错误'))
       }
     } catch (err) {
-      window.alert('导出失败：' + String(err))
+      flashError('导出失败：' + String(err))
     }
   }, [activeId])
 
