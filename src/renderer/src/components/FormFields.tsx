@@ -34,7 +34,7 @@ export function TextInput({
   return (
     <textarea
       ref={ref}
-      className="w-full outline-none text-sm bg-transparent text-gray-900 caret-gray-900 resize-none overflow-hidden"
+      className="w-full outline-none text-sm bg-transparent text-gray-900 caret-gray-900 resize-none overflow-y-hidden"
       rows={rows}
       value={value}
       onChange={(e) => { onChange(e.target.value); autoGrow() }}

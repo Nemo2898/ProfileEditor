@@ -26,6 +26,13 @@ function validateSaveBirthDates(data: ArchivePerson): string | null {
   return null
 }
 
+/** 弹窗后归还焦点，避免 cursor 消失 */
+function alertRestoreFocus(msg: string): void {
+  const el = document.activeElement as HTMLElement | null
+  window.alert(msg)
+  el?.focus()
+}
+
 export default function EditorLayout(): React.JSX.Element {
   const docs = useArchiveStore((s) => s.docs)
   const activeId = useArchiveStore((s) => s.activeId)
@@ -74,7 +81,7 @@ export default function EditorLayout(): React.JSX.Element {
 
     const data = doc.data as unknown as ArchivePerson
     const birthErr = validateSaveBirthDates(data)
-    if (birthErr) { window.alert(birthErr); return }
+    if (birthErr) { alertRestoreFocus(birthErr); return }
 
     let targetPath = doc.filePath
     const isTemp = targetPath.includes('/runtime_docs/') || targetPath.includes('\\runtime_docs\\')
@@ -114,7 +121,7 @@ export default function EditorLayout(): React.JSX.Element {
 
     const data = doc.data as unknown as ArchivePerson
     const birthErr = validateSaveBirthDates(data)
-    if (birthErr) { window.alert(birthErr); return }
+    if (birthErr) { alertRestoreFocus(birthErr); return }
 
     const targetPath = await window.api.dialogSave(data.XingMing?.trim() || undefined)
     if (!targetPath) return
@@ -149,7 +156,7 @@ export default function EditorLayout(): React.JSX.Element {
 
     const data = doc.data as unknown as ArchivePerson
     const birthErr = validateSaveBirthDates(data)
-    if (birthErr) { window.alert(birthErr); return }
+    if (birthErr) { alertRestoreFocus(birthErr); return }
 
     const outputPath = await window.api.dialogSaveDocx()
     if (!outputPath) return
