@@ -5,7 +5,7 @@
 import { ipcMain, BrowserWindow, app } from 'electron'
 import { join } from 'path'
 import { openLrmx, saveLrmx, getRuntimeDir, newBlankDoc, clearRuntimeDocs } from './xml'
-import { showOpenDialog, showSaveDialog } from './dialog'
+import { showOpenDialog, showSaveDialog, showSaveDocxDialog } from './dialog'
 import { prepareDocxData, renderDocx } from './docx'
 import type { ArchivePerson } from '../../renderer/src/types/archive'
 
@@ -51,13 +51,18 @@ export function registerIpcHandlers(win: BrowserWindow): void {
     return showSaveDialog(win)
   })
 
+  // 导出 DOCX 对话框
+  ipcMain.handle('dialog-save-docx', async () => {
+    return showSaveDocxDialog(win)
+  })
+
   // 导出 DOCX
   ipcMain.handle('export-docx', async (_event, data: Record<string, unknown>, outputPath: string) => {
     try {
       const person = data as unknown as ArchivePerson
       const renderData = prepareDocxData(person)
 
-      const templatePath = join(app.getAppPath(), 'templates', 'output.docx')
+      const templatePath = join(__dirname, '../../templates/output.docx')
       renderDocx(renderData, templatePath, outputPath)
 
       return { success: true }

@@ -45,3 +45,24 @@ export async function showSaveDialog(win: BrowserWindow): Promise<string | null>
   }
   return path
 }
+
+/**
+ * 另存为 .docx 对话框 → 返回选中路径或 null
+ */
+export async function showSaveDocxDialog(win: BrowserWindow): Promise<string | null> {
+  const result = await dialog.showSaveDialog(win, {
+    title: '导出 DOCX',
+    defaultPath: '新建档案.docx',
+    filters: [
+      { name: 'Word 文档', extensions: ['docx'] }
+    ]
+  })
+  if (result.canceled || !result.filePath) {
+    return null
+  }
+  let path = result.filePath
+  if (!path.endsWith('.docx')) {
+    path += '.docx'
+  }
+  return path
+}

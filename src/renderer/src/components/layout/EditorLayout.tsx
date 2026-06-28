@@ -125,7 +125,7 @@ export default function EditorLayout(): React.JSX.Element {
     const doc = docValues.find((d) => d.id === activeId)
     if (!doc) return
 
-    const outputPath = await window.api.dialogSave()
+    const outputPath = await window.api.dialogSaveDocx()
     if (!outputPath) return
 
     try {

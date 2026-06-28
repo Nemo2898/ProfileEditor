@@ -19,6 +19,9 @@ const api = {
   /** 另存为对话框 → 返回路径或 null */
   dialogSave: (): Promise<string | null> => ipcRenderer.invoke('dialog-save'),
 
+  /** 导出 DOCX 对话框 → 返回路径或 null */
+  dialogSaveDocx: (): Promise<string | null> => ipcRenderer.invoke('dialog-save-docx'),
+
   /** 窗口最小化 */
   windowMinimize: (): Promise<void> => ipcRenderer.invoke('window-minimize'),
 
