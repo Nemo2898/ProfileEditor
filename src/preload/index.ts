@@ -16,8 +16,9 @@ const api = {
   /** 打开文件对话框 → 返回选中路径或 null */
   dialogOpen: (): Promise<string | null> => ipcRenderer.invoke('dialog-open'),
 
-  /** 另存为对话框 → 返回路径或 null */
-  dialogSave: (): Promise<string | null> => ipcRenderer.invoke('dialog-save'),
+  /** 另存为对话框 → 返回路径或 null，可选默认文件名（不含后缀） */
+  dialogSave: (defaultName?: string): Promise<string | null> =>
+    ipcRenderer.invoke('dialog-save', defaultName),
 
   /** 导出 DOCX 对话框 → 返回路径或 null */
   dialogSaveDocx: (): Promise<string | null> => ipcRenderer.invoke('dialog-save-docx'),

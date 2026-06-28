@@ -158,10 +158,15 @@ export const useArchiveStore = create<ArchiveStore>((set, get) => {
       set((state) => {
         const doc = state.docs[state.activeId || '']
         if (!doc) return state
+        const newData = { ...doc.data, [key]: value } as ArchivePerson
+        const patch: Partial<DocState> = { data: newData, isDirty: true }
+        if (key === 'XingMing' && typeof value === 'string' && value.trim()) {
+          patch.label = value.trim()
+        }
         return {
           docs: {
             ...state.docs,
-            [doc.id]: { ...doc, data: { ...doc.data, [key]: value }, isDirty: true }
+            [doc.id]: { ...doc, ...patch }
           }
         }
       }),

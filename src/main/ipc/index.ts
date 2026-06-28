@@ -47,8 +47,8 @@ export function registerIpcHandlers(win: BrowserWindow): void {
   })
 
   // 另存为对话框
-  ipcMain.handle('dialog-save', async () => {
-    return showSaveDialog(win)
+  ipcMain.handle('dialog-save', async (_event, defaultName?: string) => {
+    return showSaveDialog(win, defaultName)
   })
 
   // 导出 DOCX 对话框

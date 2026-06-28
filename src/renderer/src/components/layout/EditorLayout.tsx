@@ -79,7 +79,7 @@ export default function EditorLayout(): React.JSX.Element {
     let targetPath = doc.filePath
     const isTemp = targetPath.includes('/runtime_docs/') || targetPath.includes('\\runtime_docs\\')
     if (!targetPath || isTemp) {
-      targetPath = await window.api.dialogSave()
+      targetPath = await window.api.dialogSave(data.XingMing?.trim() || undefined)
       if (!targetPath) return
     }
 
@@ -116,7 +116,7 @@ export default function EditorLayout(): React.JSX.Element {
     const birthErr = validateSaveBirthDates(data)
     if (birthErr) { window.alert(birthErr); return }
 
-    const targetPath = await window.api.dialogSave()
+    const targetPath = await window.api.dialogSave(data.XingMing?.trim() || undefined)
     if (!targetPath) return
 
     try {
