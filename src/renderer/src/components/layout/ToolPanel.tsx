@@ -15,7 +15,6 @@ function ToolButton({ icon, label, onClick }: ToolButtonProps): React.JSX.Elemen
   return (
     <button
       onClick={onClick}
-      onMouseDown={(e) => e.preventDefault()}
       className="flex flex-col items-center gap-1 p-2 rounded-lg text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"
       title={label}
     >
