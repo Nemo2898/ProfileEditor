@@ -13,8 +13,8 @@ const api = {
   newBlankDoc: (): Promise<string> =>
     ipcRenderer.invoke('new-blank-doc'),
 
-  /** 打开文件对话框 → 返回选中路径或 null */
-  dialogOpen: (): Promise<string | null> => ipcRenderer.invoke('dialog-open'),
+  /** 打开文件对话框（多选）→ 返回选中路径数组或 null */
+  dialogOpen: (): Promise<string[] | null> => ipcRenderer.invoke('dialog-open'),
 
   /** 另存为对话框 → 返回路径或 null，可选默认文件名（不含后缀） */
   dialogSave: (defaultName?: string): Promise<string | null> =>

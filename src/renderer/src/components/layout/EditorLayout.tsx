@@ -58,12 +58,20 @@ export default function EditorLayout(): React.JSX.Element {
   // 打开
   const handleOpen = useCallback(async () => {
     try {
-      const path = await window.api.dialogOpen()
-      if (!path) return
-      const person = (await window.api.openLrmx(path)) as unknown as ArchivePerson
-      openDoc(path, person)
-    } catch (err) {
-      flashError('打开失败：' + String(err))
+      const paths = await window.api.dialogOpen()
+      if (!paths || paths.length === 0) return
+
+      for (const path of paths) {
+        try {
+          const person = (await window.api.openLrmx(path)) as unknown as ArchivePerson
+          openDoc(path, person)
+        } catch (err) {
+          const base = path.split(/[/\\]/).pop() || path
+          flashError(`解析失败，已跳过：${base}`)
+        }
+      }
+    } catch {
+      // 对话框取消或失败
     }
   }, [openDoc])
 

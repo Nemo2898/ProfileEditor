@@ -5,9 +5,9 @@
 import { dialog, BrowserWindow } from 'electron'
 
 /**
- * 打开 .lrmx 文件对话框 → 返回选中路径或 null
+ * 打开 .lrmx 文件对话框（多选）→ 返回选中路径数组或 null
  */
-export async function showOpenDialog(win: BrowserWindow): Promise<string | null> {
+export async function showOpenDialog(win: BrowserWindow): Promise<string[] | null> {
   const result = await dialog.showOpenDialog(win, {
     title: '打开档案',
     filters: [
@@ -15,12 +15,12 @@ export async function showOpenDialog(win: BrowserWindow): Promise<string | null>
       { name: 'XML 文件', extensions: ['xml'] },
       { name: '所有文件', extensions: ['*'] }
     ],
-    properties: ['openFile']
+    properties: ['openFile', 'multiSelections']
   })
   if (result.canceled || result.filePaths.length === 0) {
     return null
   }
-  return result.filePaths[0]
+  return result.filePaths
 }
 
 /**
