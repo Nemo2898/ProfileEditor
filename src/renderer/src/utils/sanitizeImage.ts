@@ -118,13 +118,18 @@ export async function sanitizeImage(
     throw new Error('无法创建 Canvas 上下文')
   }
 
-  // 画布先填白色再绘图（防透明区域在 Word/WPS 渲染为黑色）
+  // 先填白再贴图，最后强制所有像素 alpha=255（防 Word/WPS 渲染透明为黑）
   ctx.fillStyle = '#FFFFFF'
   ctx.fillRect(0, 0, expectedW, expectedH)
-  // 自动居中裁剪，强制填充目标尺寸
   const { sx, sy, sw, sh } = calcCover(bitmap.width, bitmap.height, expectedW, expectedH)
   ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, expectedW, expectedH)
   bitmap.close()
+
+  const imageData = ctx.getImageData(0, 0, expectedW, expectedH)
+  for (let i = 3; i < imageData.data.length; i += 4) {
+    imageData.data[i] = 255
+  }
+  ctx.putImageData(imageData, 0, 0)
 
   // toBlob → PNG
   const cleanBlob = await new Promise<Blob>((resolve, reject) => {
