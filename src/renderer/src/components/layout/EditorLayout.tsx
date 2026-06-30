@@ -85,8 +85,8 @@ export default function EditorLayout(): React.JSX.Element {
     const birthErr = validateSaveBirthDates(data)
     if (birthErr) { flashError(birthErr); return }
 
-    let targetPath = doc.filePath
-    const isTemp = targetPath.includes('/runtime_docs/') || targetPath.includes('\\runtime_docs\\')
+    let targetPath: string | null = doc.filePath
+    const isTemp = targetPath ? targetPath.includes('/runtime_docs/') || targetPath.includes('\\runtime_docs\\') : true
     if (!targetPath || isTemp) {
       targetPath = await window.api.dialogSave(data.XingMing?.trim() || undefined)
       if (!targetPath) return

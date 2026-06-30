@@ -34,13 +34,9 @@ export interface DocxRenderData {
   ZhuanYeJiShuZhiWu: string
   ShuXiZhuanYeYouHeZhuanChang: string
   QuanRiZhiJiaoYu_XueLi: string
-  QuanRiZhiJiaoYu_XueWei: string
   QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: string
-  QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: string
   ZaiZhiJiaoYu_XueLi: string
-  ZaiZhiJiaoYu_XueWei: string
   ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: string
-  ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: string
   XianRenZhiWu: string
   NiRenZhiWu: string
   NiMianZhiWu: string

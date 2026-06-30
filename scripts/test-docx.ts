@@ -10,8 +10,6 @@
 
 import { readFileSync, writeFileSync } from 'fs'
 import { join } from 'path'
-import PizZip from 'pizzip'
-import Docxtemplater from 'docxtemplater'
 import type { ArchivePerson } from '../src/renderer/src/types/archive'
 import { prepareDocxData, renderDocx } from '../src/main/ipc/docx'
 
