@@ -39,11 +39,18 @@ export default function Page1(): React.JSX.Element {
 
     try {
       showDebugBar(`[DEBUG] 源图 ${file.name} ${file.size}bytes type:${file.type}`)
-      const t0 = performance.now()
-      const cleanBase64 = await sanitizeImage(file, 0.8, 800, 1000)
-      const t1 = performance.now()
-      showDebugBar(`[DEBUG-A] sanitize output: ${cleanBase64.length} chars, ${(t1-t0).toFixed(0)}ms`)
-      setField('ZhaoPian', `data:image/png;base64,${cleanBase64}`)
+      
+      // === 实验：绕开 sanitizeImage，直接用 FileReader 传原图 ===
+      const rawDataUrl = await new Promise<string>((resolve, reject) => {
+        const r = new FileReader()
+        r.onload = () => resolve(r.result as string)
+        r.onerror = () => reject(new Error('读取失败'))
+        r.readAsDataURL(file)
+      })
+      showDebugBar(`[DEBUG-RAW] 原图 dataUrl: ${rawDataUrl.length} chars`)
+      setField('ZhaoPian', rawDataUrl)
+      // === 实验结束 ===
+      
       const stored = useArchiveStore.getState()
       const storedDoc = stored.activeId ? stored.docs[stored.activeId] : null
       showDebugBar(`[DEBUG-B] store ZhaoPian: ${storedDoc?.data.ZhaoPian?.length ?? 0} chars`)
