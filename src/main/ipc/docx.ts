@@ -138,6 +138,7 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
  * @param outputPath 输出 .docx 路径
  */
 export function renderDocx(data: DocxRenderData, templatePath: string, outputPath: string): void {
+  console.log('[DEBUG-C] renderDocx ZhaoPian 长度:', data.ZhaoPian?.length, '前50字符:', data.ZhaoPian?.substring(0, 50))
   const template = readFileSync(templatePath)
   const zip = new PizZip(template)
 
@@ -146,6 +147,7 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
     centered: false,
     fileType: 'docx',
     getImage(tagValue: string): Buffer {
+      console.log('[DEBUG-C] getImage tagValue 长度:', tagValue?.length, '前50字符:', tagValue?.substring(0, 50))
       if (!tagValue) {
         // 1×1 透明 PNG 占位（无照片时不报错）
         return Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')

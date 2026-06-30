@@ -71,6 +71,7 @@ const testPerson: ArchivePerson = {
 // 注入测试证件照（1×1 PNG，模拟 sanitizeImage 输出）
 const PHOTO_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
 testPerson.ZhaoPian = `data:image/png;base64,${PHOTO_BASE64}`
+console.log('[DEBUG-D] test ZhaoPian 长度:', testPerson.ZhaoPian.length)
 
 // ========== 核心管线 ==========
 try {

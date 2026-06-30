@@ -27,7 +27,9 @@ export default function Page1(): React.JSX.Element {
 
     try {
       const cleanBase64 = await sanitizeImage(file, 0.8, 800, 1000)
+      console.log('[DEBUG-A] sanitizeImage 产出 base64 长度:', cleanBase64.length)
       setField('ZhaoPian', `data:image/png;base64,${cleanBase64}`)
+      console.log('[DEBUG-B] store ZhaoPian 长度:', data.ZhaoPian?.length)
     } catch (err) {
       flashError('证件照处理失败：' + String(err))
     } finally {
