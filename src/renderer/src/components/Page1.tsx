@@ -2,8 +2,11 @@
  * 第 1 页 — 干部任免审批表（基本信息 / 教育 / 职务 / 简历 / 奖惩 / 考核 / 任免理由）
  */
 
+import { useRef, useCallback } from 'react'
 import { useArchiveStore } from '../store/archive'
 import { TextInput, TextArea, TD, TH } from './FormFields'
+import { sanitizeImage } from '../utils/sanitizeImage'
+import { flashError } from '../utils/flash'
 
 export default function Page1(): React.JSX.Element {
   const data = useArchiveStore((s) => {
@@ -11,8 +14,38 @@ export default function Page1(): React.JSX.Element {
     return doc?.data
   })
   const setField = useArchiveStore((s) => s.setField)
+  const fileInputRef = useRef<HTMLInputElement>(null)
+
+  const handlePhotoSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
+    const file = e.target.files?.[0]
+    if (!file) return
+
+    if (!file.type.startsWith('image/')) {
+      flashError('请选择图片文件（JPEG / PNG）')
+      return
+    }
+
+    try {
+      const reader = new FileReader()
+      const dataUrl = await new Promise<string>((resolve, reject) => {
+        reader.onload = () => resolve(reader.result as string)
+        reader.onerror = () => reject(new Error('文件读取失败'))
+        reader.readAsDataURL(file)
+      })
+
+      const cleanBase64 = await sanitizeImage(dataUrl, 0.8, 800, 1000)
+      setField('ZhaoPian', `data:image/png;base64,${cleanBase64}`)
+    } catch (err) {
+      flashError('证件照处理失败：' + String(err))
+    } finally {
+      // 重置 input 以允许重复选同一文件
+      if (fileInputRef.current) fileInputRef.current.value = ''
+    }
+  }, [setField])
 
   if (!data) return <div className="p-4 text-slate-400 text-sm">未打开档案</div>
+
+  const hasPhoto = data.ZhaoPian && data.ZhaoPian.length > 100
 
   return (
     <div className="p-4 max-w-[210mm] mx-auto bg-stone-50">
@@ -45,8 +78,26 @@ export default function Page1(): React.JSX.Element {
                 onChange={(v) => setField('ChuShengNianYue', v)}
               />
             </td>
-            <td className="border border-gray-400 text-center text-xs text-gray-400" rowSpan={5}>
-              照片
+            <td className="border border-gray-400 text-center align-middle" rowSpan={5} style={{ width: '16%' }}>
+              <input
+                ref={fileInputRef}
+                type="file"
+                accept="image/*"
+                className="hidden"
+                onChange={handlePhotoSelect}
+              />
+              <button
+                onClick={() => fileInputRef.current?.click()}
+                className="w-full h-full min-h-[160px] flex items-center justify-center cursor-pointer hover:bg-gray-100 transition-colors"
+              >
+                {hasPhoto ? (
+                  <img src={data.ZhaoPian} alt="证件照" className="w-full h-full object-cover" />
+                ) : (
+                  <span className="text-xs text-gray-400">
+                    点此上传<br />证件照
+                  </span>
+                )}
+              </button>
             </td>
           </tr>
 
