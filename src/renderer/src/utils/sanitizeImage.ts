@@ -118,6 +118,9 @@ export async function sanitizeImage(
     throw new Error('无法创建 Canvas 上下文')
   }
 
+  // 画布先填白色再绘图（防透明区域在 Word/WPS 渲染为黑色）
+  ctx.fillStyle = '#FFFFFF'
+  ctx.fillRect(0, 0, expectedW, expectedH)
   // 自动居中裁剪，强制填充目标尺寸
   const { sx, sy, sw, sh } = calcCover(bitmap.width, bitmap.height, expectedW, expectedH)
   ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, expectedW, expectedH)
