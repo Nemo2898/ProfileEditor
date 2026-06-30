@@ -149,8 +149,12 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
     getImage(tagValue: string): Buffer {
       console.log('[DEBUG-C] getImage tagValue 长度:', tagValue?.length, '前50字符:', tagValue?.substring(0, 50))
       if (!tagValue) {
-        // 1×1 透明 PNG 占位（无照片时不报错）
         return Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
+      }
+      // 格式防护：ImageModule 永远存为 .png，非 PNG 输入会导致 Word/WPS 解析异常
+      const isJpeg = tagValue.startsWith('data:image/jpeg')
+      if (isJpeg) {
+        console.warn('[DOCX] 收到 JPEG 数据——ImageModule 会存为 .png，可能导致渲染异常。请确保 sanitizeImage 输出 PNG')
       }
       const b64 = tagValue.replace(/^data:image\/\w+;base64,/, '')
       return Buffer.from(b64, 'base64')
