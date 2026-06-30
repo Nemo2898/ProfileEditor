@@ -38,6 +38,7 @@ export default function Page1(): React.JSX.Element {
     }
 
     try {
+      showDebugBar(`[DEBUG] 源图 ${file.name} ${file.size}bytes type:${file.type}`)
       const t0 = performance.now()
       const cleanBase64 = await sanitizeImage(file, 0.8, 800, 1000)
       const t1 = performance.now()

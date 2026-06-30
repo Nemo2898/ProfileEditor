@@ -98,14 +98,23 @@ export async function sanitizeImage(
     throw new Error('不支持的图片格式：仅接受 JPEG 或 PNG')
   }
 
-  // 3. 沙箱内解码（直接从 Blob，不经过 fetch）
-  const bitmap = await createImageBitmap(file)
+  // 3. 用 <img> 解码（createImageBitmap 在 Electron sandbox 下可能返回空尺寸）
+  const url = URL.createObjectURL(file)
+  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error('图片解码失败'))
+    image.src = url
+  })
+  URL.revokeObjectURL(url)
+
+  const srcW = img.naturalWidth
+  const srcH = img.naturalHeight
 
   // 4. 校验分辨率上限
-  const area = bitmap.width * bitmap.height
+  const area = srcW * srcH
   if (area > MAX_PIXEL_AREA) {
-    bitmap.close()
-    throw new Error(`图片分辨率过大：${bitmap.width}×${bitmap.height}`)
+    throw new Error(`图片分辨率过大：${srcW}×${srcH}`)
   }
 
   // 5. 居中裁剪 + 重编码（剥元数据）
@@ -114,16 +123,14 @@ export async function sanitizeImage(
   canvas.height = expectedH
   const ctx = canvas.getContext('2d')
   if (!ctx) {
-    bitmap.close()
     throw new Error('无法创建 Canvas 上下文')
   }
 
   // 先填白再贴图，最后强制所有像素 alpha=255（防 Word/WPS 渲染透明为黑）
   ctx.fillStyle = '#FFFFFF'
   ctx.fillRect(0, 0, expectedW, expectedH)
-  const { sx, sy, sw, sh } = calcCover(bitmap.width, bitmap.height, expectedW, expectedH)
-  ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, expectedW, expectedH)
-  bitmap.close()
+  const { sx, sy, sw, sh } = calcCover(srcW, srcH, expectedW, expectedH)
+  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, expectedW, expectedH)
 
   const imageData = ctx.getImageData(0, 0, expectedW, expectedH)
   for (let i = 3; i < imageData.data.length; i += 4) {
