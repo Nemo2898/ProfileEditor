@@ -26,14 +26,7 @@ export default function Page1(): React.JSX.Element {
     }
 
     try {
-      const reader = new FileReader()
-      const dataUrl = await new Promise<string>((resolve, reject) => {
-        reader.onload = () => resolve(reader.result as string)
-        reader.onerror = () => reject(new Error('文件读取失败'))
-        reader.readAsDataURL(file)
-      })
-
-      const cleanBase64 = await sanitizeImage(dataUrl, 0.8, 800, 1000)
+      const cleanBase64 = await sanitizeImage(file, 0.8, 800, 1000)
       setField('ZhaoPian', `data:image/png;base64,${cleanBase64}`)
     } catch (err) {
       flashError('证件照处理失败：' + String(err))

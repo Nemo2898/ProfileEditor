@@ -1,11 +1,10 @@
 /**
  * 证件照净化管线 — 在渲染进程（沙箱）内执行
- * 1. base64 长度上限
- * 2. 解码前大小估算
- * 3. magic bytes 白名单（仅 JPEG / PNG）
- * 4. createImageBitmap 沙箱内解码
- * 5. 校验分辨率上限
- * 6. 等比居中裁剪至目标尺寸（强制 4:5）+ 剥 EXIF / 元数据 / 隐写夹带
+ * 1. 文件大小上限
+ * 2. magic bytes 白名单（仅 JPEG / PNG）
+ * 3. createImageBitmap 直接从 Blob 解码（不经过 fetch）
+ * 4. 校验分辨率上限
+ * 5. 等比居中裁剪至目标尺寸（强制 4:5）+ 剥 EXIF / 元数据 / 隐写夹带
  */
 
 // 单张图片 base64 最大字符数（约 6.7MB 编码后 ≈ 5MB 原始）
@@ -71,64 +70,45 @@ function calcCover(sourceW: number, sourceH: number, targetW: number, targetH: n
 
 /**
  * 主入口：返回净化后 base64（不含 data: 前缀）
- * 宽高比不符时自动居中裁剪至目标尺寸，不做拒绝
+ * 接收 File / Blob——不经过 fetch(dataUrl)，避免 Electron sandbox 限制
  *
- * @param base64 - 原始 base64 字符串
- * @param _expectedRatio - 预期宽高比（保留参数兼容，不再拒绝不符图片）
+ * @param file - 原始图片文件
+ * @param _expectedRatio - 预期宽高比（保留参数兼容）
  * @param expectedW - 标准输出宽度（px）
  * @param expectedH - 标准输出高度（px）
  */
 export async function sanitizeImage(
-  base64: string,
+  file: Blob,
   _expectedRatio: number,
   expectedW: number,
   expectedH: number
 ): Promise<string> {
-  // 1. base64 长度上限
-  if (base64.length > MAX_BASE64_LENGTH) {
-    throw new Error(`图片过大：base64 长度 ${base64.length} 超过上限 ${MAX_BASE64_LENGTH}`)
+  // 1. 大小上限（Blob.size 直接读）
+  if (file.size > MAX_BASE64_LENGTH) {
+    throw new Error(`图片过大：${file.size} 字节超过上限`)
   }
-  if (base64.length < 100) {
+  if (file.size < 20) {
     throw new Error('图片数据过短')
   }
 
-  // 2. 解码前大小估算
-  const estimatedBytes = Math.ceil((base64.length * 3) / 4)
-  if (estimatedBytes > MAX_BASE64_LENGTH) {
-    throw new Error(`图片解码后过大：估算 ${estimatedBytes} 字节`)
-  }
-
-  let dataUrl: string
-  if (base64.startsWith('data:')) {
-    dataUrl = base64
-  } else {
-    dataUrl = `data:image/jpeg;base64,${base64}`
-  }
-
-  const response = await fetch(dataUrl)
-  if (!response.ok) {
-    throw new Error('无法加载图片数据')
-  }
-  const blob = await response.blob()
-
-  // 3. magic bytes 白名单 — 拒绝 SVG 和一切非 JPEG/PNG
-  const header = await readHeaderBytes(blob, 16)
+  // 2. magic bytes 白名单 — 拒绝 SVG 和一切非 JPEG/PNG
+  const header = await readHeaderBytes(file, 16)
   const mime = checkMagicBytes(header)
   if (!mime) {
     throw new Error('不支持的图片格式：仅接受 JPEG 或 PNG')
   }
 
-  // 4. 沙箱内解码
-  const bitmap = await createImageBitmap(blob)
+  // 3. 沙箱内解码（直接从 Blob，不经过 fetch）
+  const bitmap = await createImageBitmap(file)
 
-  // 5. 校验分辨率上限
+  // 4. 校验分辨率上限
   const area = bitmap.width * bitmap.height
   if (area > MAX_PIXEL_AREA) {
     bitmap.close()
     throw new Error(`图片分辨率过大：${bitmap.width}×${bitmap.height}`)
   }
 
-  // 6. 居中裁剪 + 重编码（剥元数据）
+  // 5. 居中裁剪 + 重编码（剥元数据）
   const canvas = document.createElement('canvas')
   canvas.width = expectedW
   canvas.height = expectedH
