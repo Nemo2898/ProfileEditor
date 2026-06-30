@@ -156,11 +156,11 @@ export async function sanitizeImage(
 
   // 转回 base64（不含前缀，用 FileReader 安全转码）
   const reader = new FileReader()
-  const dataUrl = await new Promise<string>((resolve, reject) => {
+  const base64DataUrl = await new Promise<string>((resolve, reject) => {
     reader.onload = () => resolve(reader.result as string)
     reader.onerror = () => reject(new Error('Base64 编码失败'))
     reader.readAsDataURL(cleanBlob)
   })
-  const cleanBase64 = dataUrl.split(',')[1]
+  const cleanBase64 = base64DataUrl.split(',')[1]
   return cleanBase64
 }
