@@ -12,7 +12,9 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: profile_editor
+  executableName: profile-editor
+  target:
+    - nsis
 nsis:
   artifactName: ${name}-${version}-setup.${ext}
   shortcutName: ${productName}
@@ -38,7 +40,3 @@ linux:
 appImage:
   artifactName: ${name}-${version}.${ext}
 npmRebuild: false
-win:
-  executableName: profile-editor
-  target:
-    - nsis
