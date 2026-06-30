@@ -2,9 +2,9 @@
  * 证件照净化管线 — 在渲染进程（沙箱）内执行
  * 1. 文件大小上限
  * 2. magic bytes 白名单（仅 JPEG / PNG）
- * 3. createImageBitmap 直接从 Blob 解码（不经过 fetch）
- * 4. 校验分辨率上限
- * 5. 等比居中裁剪至目标尺寸（强制 4:5）+ 剥 EXIF / 元数据 / 隐写夹带
+ * 3. <img> 解码 + 尺寸校验
+ * 4. canvas 白底 + cover-fit 缩放（居中填满、不等比裁剪）
+ * 5. toBlob PNG + base64 编码
  */
 
 // 单张图片 base64 最大字符数（约 6.7MB 编码后 ≈ 5MB 原始）
@@ -43,32 +43,6 @@ function checkMagicBytes(header: Uint8Array): string | null {
 }
 
 /**
- * 计算等比居中裁剪的源区域
- * 目标 800×1000（4:5），不拉伸变形，多余部分从两侧/上下裁掉
- */
-function calcCover(sourceW: number, sourceH: number, targetW: number, targetH: number) {
-  const targetRatio = targetW / targetH
-  const sourceRatio = sourceW / sourceH
-
-  let sx = 0
-  let sy = 0
-  let sw = sourceW
-  let sh = sourceH
-
-  if (sourceRatio > targetRatio) {
-    // 源图偏宽 → 裁左右
-    sw = sourceH * targetRatio
-    sx = (sourceW - sw) / 2
-  } else {
-    // 源图偏高 → 裁上下
-    sh = sourceW / targetRatio
-    sy = (sourceH - sh) / 2
-  }
-
-  return { sx, sy, sw, sh }
-}
-
-/**
  * 主入口：返回净化后 base64（不含 data: 前缀）
  * 接收 File / Blob——不经过 fetch(dataUrl)，避免 Electron sandbox 限制
  *
@@ -98,7 +72,7 @@ export async function sanitizeImage(
     throw new Error('不支持的图片格式：仅接受 JPEG 或 PNG')
   }
 
-  // 3. 用 <img> 解码（createImageBitmap 在 Electron sandbox 下可能返回空尺寸）
+  // 3. 用 <img> 解码
   const url = URL.createObjectURL(file)
   const img = await new Promise<HTMLImageElement>((resolve, reject) => {
     const image = new Image()
@@ -108,8 +82,11 @@ export async function sanitizeImage(
   })
   URL.revokeObjectURL(url)
 
-  const srcW = img.naturalWidth
-  const srcH = img.naturalHeight
+  const srcW = img.naturalWidth || 0
+  const srcH = img.naturalHeight || 0
+  if (srcW === 0 || srcH === 0) {
+    throw new Error('图片尺寸异常：无法读取宽高')
+  }
 
   // 4. 校验分辨率上限
   const area = srcW * srcH
@@ -117,7 +94,7 @@ export async function sanitizeImage(
     throw new Error(`图片分辨率过大：${srcW}×${srcH}`)
   }
 
-  // 5. 居中裁剪 + 重编码（剥元数据）
+  // 5. 绘制：白底 + cover-fit 缩放（等比覆盖，居中裁剪，不拉伸变形）
   const canvas = document.createElement('canvas')
   canvas.width = expectedW
   canvas.height = expectedH
@@ -126,26 +103,21 @@ export async function sanitizeImage(
     throw new Error('无法创建 Canvas 上下文')
   }
 
-  // 先填白再贴图，最后强制所有像素 alpha=255（防 Word/WPS 渲染透明为黑）
   ctx.fillStyle = '#FFFFFF'
   ctx.fillRect(0, 0, expectedW, expectedH)
-  const { sx, sy, sw, sh } = calcCover(srcW, srcH, expectedW, expectedH)
-  ctx.drawImage(img, sx, sy, sw, sh, 0, 0, expectedW, expectedH)
 
-  const imageData = ctx.getImageData(0, 0, expectedW, expectedH)
-  for (let i = 3; i < imageData.data.length; i += 4) {
-    imageData.data[i] = 255
-  }
-  ctx.putImageData(imageData, 0, 0)
+  const scale = Math.max(expectedW / srcW, expectedH / srcH)
+  const dw = Math.round(srcW * scale)
+  const dh = Math.round(srcH * scale)
+  const dx = Math.round((expectedW - dw) / 2)
+  const dy = Math.round((expectedH - dh) / 2)
+  ctx.drawImage(img, dx, dy, dw, dh)
 
   // toBlob → PNG
   const cleanBlob = await new Promise<Blob>((resolve, reject) => {
     canvas.toBlob((b) => {
-      if (b) {
-        resolve(b)
-      } else {
-        reject(new Error('Canvas toBlob 失败'))
-      }
+      if (b) resolve(b)
+      else reject(new Error('Canvas toBlob 失败'))
     }, 'image/png')
   })
 
