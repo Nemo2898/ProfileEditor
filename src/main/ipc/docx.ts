@@ -7,6 +7,7 @@
 import { readFileSync, writeFileSync } from 'fs'
 import PizZip from 'pizzip'
 import Docxtemplater from 'docxtemplater'
+import ImageModule from 'docxtemplater-image-module-free'
 import type { ArchivePerson } from '../../renderer/src/types/archive'
 
 /** DOCX 渲染用的扁平家庭成员（年龄已计算） */
@@ -143,9 +144,28 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
 export function renderDocx(data: DocxRenderData, templatePath: string, outputPath: string): void {
   const template = readFileSync(templatePath)
   const zip = new PizZip(template)
+
+  // 图片模块：证件照注入
+  const imageModule = new ImageModule({
+    centered: false,
+    fileType: 'docx',
+    getImage(tagValue: string): Buffer {
+      if (!tagValue) {
+        // 1×1 透明 PNG 占位（无照片时不报错）
+        return Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
+      }
+      const b64 = tagValue.replace(/^data:image\/\w+;base64,/, '')
+      return Buffer.from(b64, 'base64')
+    },
+    getSize(): [number, number] {
+      return [800, 1000]
+    }
+  })
+
   const doc = new Docxtemplater(zip, {
     paragraphLoop: true,
-    linebreaks: true
+    linebreaks: true,
+    modules: [imageModule]
   })
 
   doc.render(data)

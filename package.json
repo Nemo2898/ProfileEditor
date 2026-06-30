@@ -25,6 +25,7 @@
     "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "docxtemplater": "^3.69.0",
+    "docxtemplater-image-module-free": "^1.1.1",
     "fast-xml-parser": "^5.9.3",
     "lucide-react": "^1.21.0",
     "pizzip": "^3.2.0",

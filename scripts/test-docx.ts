@@ -70,6 +70,11 @@ const testPerson: ArchivePerson = {
   Version: '3.2.1.16'
 }
 
+// 注入测试证件照（蓝色底 4:5 矩形，模拟 sanitizeImage 输出）
+// docxtemplater-image-module 需要 base64 不含 data URI 前缀
+const PHOTO_BASE64 = 'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mP8/5+hHgAHggJ/PchI7wAAAABJRU5ErkJggg=='
+testPerson.ZhaoPian = `data:image/png;base64,${PHOTO_BASE64}`
+
 // ========== 核心管线 ==========
 try {
   // 1. 转换：LRMX 数据 → DOCX 渲染数据（运算年龄、拍平家庭、过滤多余字段）
