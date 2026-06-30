@@ -100,7 +100,6 @@ export async function sanitizeImage(
 
   // 3. 沙箱内解码（直接从 Blob，不经过 fetch）
   const bitmap = await createImageBitmap(file)
-  console.warn('[DEBUG-A] bitmap 尺寸:', bitmap.width, 'x', bitmap.height)
 
   // 4. 校验分辨率上限
   const area = bitmap.width * bitmap.height
