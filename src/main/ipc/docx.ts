@@ -57,8 +57,8 @@ export interface DocxRenderData {
  * @param refDate e.g. "2026.06"
  */
 export function calcAge(birth: string, refDate: string): number {
-  const [by, bm] = birth.split('.').map(s => parseInt(s, 10))
-  const [ry, rm] = refDate.split('.').map(s => parseInt(s, 10))
+  const [by, bm] = String(birth).split('.').map(s => parseInt(s, 10))
+  const [ry, rm] = String(refDate).split('.').map(s => parseInt(s, 10))
   let age = ry - by
   if (rm < bm) age--
   return age
@@ -84,7 +84,7 @@ const EMPTY_DOCX_FAMILY: DocxFamilyMember = {
  * 3. 跳过 ShenFenZheng、JiSuanNianLingShiJian、Version（纸质表格无这些栏）
  */
 export function prepareDocxData(person: ArchivePerson): DocxRenderData {
-  const refDate = person.JiSuanNianLingShiJian || ''
+  const refDate = String(person.JiSuanNianLingShiJian || '')
   const rawItems = (person.JiaTingChengYuan?.Item ?? []).map(member => ({
     ChengWei: member.ChengWei,
     XingMing: member.XingMing,
