@@ -163,13 +163,14 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
 
   const buf = doc.getZip().generate({ type: 'nodebuffer' })
 
-  // 后处理：移除 a:noFill（WPS 将 pic:spPr 的 noFill 解读为"不填充图片"）
+  // 后处理：去 a:noFill + noChangeAspect——宽度撑满，高度溢出自行裁剪蓝幕
   const postZip = new PizZip(buf)
   const postDoc = postZip.file('word/document.xml')!.asText()
   const fixed = postDoc
     .replace(/<a:ln><a:noFill\/><\/a:ln>/g, '')
     .replace(/<a:noFill\/>/g, '')
     .replace(/<a:ln><\/a:ln>/g, '')
+    .replace(/noChangeAspect="1"/g, '')
   postZip.file('word/document.xml', fixed)
   const finalBuf = postZip.generate({ type: 'nodebuffer' })
   writeFileSync(outputPath, finalBuf)
