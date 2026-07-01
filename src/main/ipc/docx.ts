@@ -139,20 +139,12 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
  * @param outputPath 输出 .docx 路径
  */
 export async function renderDocx(data: DocxRenderData, templatePath: string, outputPath: string): Promise<void> {
-  // 去 alpha 通道 + 去掉 pHYs chunk（WPS 可能用它覆盖 EMU extent）
+  // 去 alpha 通道
   if (data.ZhaoPian && data.ZhaoPian.length > 100) {
     const b64 = data.ZhaoPian.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(b64, 'base64')
     const stripped = await sharp(buf).removeAlpha().png().toBuffer()
-    // 手工删除 pHYs chunk：pHYs = 70 48 59 73，去掉前 4 字节 length + 4 字节 type + 9 字节 data + 4 字节 CRC = 共 21 字节
-    const pHYsIdx = stripped.indexOf(Buffer.from('pHYs'))
-    if (pHYsIdx > 0) {
-      const clean = Buffer.concat([stripped.subarray(0, pHYsIdx - 4), stripped.subarray(pHYsIdx + 9 + 4)])
-      data.ZhaoPian = 'data:image/png;base64,' + clean.toString('base64')
-    } else {
-      data.ZhaoPian = 'data:image/png;base64,' + stripped.toString('base64')
-    }
-    console.log('[SHARP] After removeAlpha+pHYs: size=%d', Buffer.from(data.ZhaoPian.replace(/^data:image\/\w+;base64,/, ''), 'base64').length)
+    data.ZhaoPian = 'data:image/png;base64,' + stripped.toString('base64')
   }
 
   const template = readFileSync(templatePath)
@@ -163,14 +155,11 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
     centered: false,
     fileType: 'docx',
     getImage(tagValue: string): Buffer {
-      console.log('[DEBUG-C] getImage tagValue 长度:', tagValue?.length, '前50字符:', tagValue?.substring(0, 50))
       if (!tagValue) {
         return Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
       }
       const b64 = tagValue.replace(/^data:image\/\w+;base64,/, '')
-      const imgBuf = Buffer.from(b64, 'base64')
-      console.log('[DEBUG-C] ImageBuffer colorType:', imgBuf[25], 'size:', imgBuf.length)
-      return imgBuf
+      return Buffer.from(b64, 'base64')
     },
     getSize(): [number, number] {
       return [800, 1000]
@@ -186,31 +175,5 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
   doc.render(data)
 
   const buf = doc.getZip().generate({ type: 'nodebuffer' })
-
-  // DEBUG: 把 ImageModule 实际嵌入的图片原件写出来对比
-  const { tmpdir } = require('os')
-  const { join: pJoin } = require('path')
-  const PizZip2 = require('pizzip')
-  const debugZip = new PizZip2(buf)
-  const mediaFiles = Object.keys(debugZip.files).filter(f => f.includes('media') || f.includes('image'))
-  for (const name of mediaFiles) {
-    const imgBuf = debugZip.files[name].asNodeBuffer()
-    const ct = imgBuf[25]
-    const outPath = pJoin(tmpdir(), 'debug-embedded-' + name.replace(/\//g, '_'))
-    writeFileSync(outPath, imgBuf)
-    console.log('[DEBUG-EMBED]', name, '→', outPath, 'size:', imgBuf.length, 'colorType:', ct)
-  }
-
-  // 后处理：清理 ImageModule 产出的 WPS 不兼容属性
-  const postDoc = debugZip.file('word/document.xml')!.asText()
-  const fixed = postDoc
-    .replace(/ noChangeAspect="1"/g, '')
-    .replace(/ noChangeArrowheads="\w+"/g, '')
-    .replace(/<a14:useLocalDpi[^>]*\/>/g, '')
-    .replace(/<a:extLst>.*?<\/a:extLst>/gs, '')
-    .replace(/<a:noFill\/>/g, '')
-    .replace(/<a:ln>.*?<\/a:ln>/gs, '')
-  debugZip.file('word/document.xml', fixed)
-  const finalBuf2 = debugZip.generate({ type: 'nodebuffer' })
-  writeFileSync(outputPath, finalBuf2)
+  writeFileSync(outputPath, buf)
 }
