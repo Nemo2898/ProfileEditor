@@ -168,12 +168,12 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
   const PHOTO_EMU_W = Math.round(800 * 9525)
   const PHOTO_EMU_H = Math.round(1000 * 9525)
 
-  const drawingXml = photoBuf
-    ? `<w:drawing>
+  if (photoBuf) {
+    const drawingXml = `<w:drawing>
       <wp:inline distT="0" distB="0" distL="0" distR="0">
         <wp:extent cx="${PHOTO_EMU_W}" cy="${PHOTO_EMU_H}"/>
         <wp:effectExtent l="0" t="0" r="0" b="0"/>
-        <wp:docPr id="1" name="photo" descr="证件照"/>
+        <wp:docPr id="1" name="photo1" descr="证件照"/>
         <wp:cNvGraphicFramePr>
           <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
         </wp:cNvGraphicFramePr>
@@ -181,20 +181,15 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
           <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
             <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
               <pic:nvPicPr>
-                <pic:cNvPr id="0" name="photo" descr="证件照"/>
-                <pic:cNvPicPr>
-                  <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
-                </pic:cNvPicPr>
+                <pic:cNvPr id="0" name="photo1" descr="证件照"/>
+                <pic:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></pic:cNvPicPr>
               </pic:nvPicPr>
               <pic:blipFill>
                 <a:blip r:embed="rIdPhoto"/>
                 <a:stretch><a:fillRect/></a:stretch>
               </pic:blipFill>
               <pic:spPr bwMode="auto">
-                <a:xfrm>
-                  <a:off x="0" y="0"/>
-                  <a:ext cx="${PHOTO_EMU_W}" cy="${PHOTO_EMU_H}"/>
-                </a:xfrm>
+                <a:xfrm><a:off x="0" y="0"/><a:ext cx="${PHOTO_EMU_W}" cy="${PHOTO_EMU_H}"/></a:xfrm>
                 <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
                 <a:noFill/>
                 <a:ln><a:noFill/></a:ln>
@@ -204,10 +199,16 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
         </a:graphic>
       </wp:inline>
     </w:drawing>`
-    : ''
 
-  const fixedDoc = outDoc.replace(/###PHOTO###/g, drawingXml)
-  outZip.file('word/document.xml', fixedDoc)
+    // 直接替换包含占位符的整个 <w:r>...</w:r> 元素为 drawing
+    const placeholderRegex = /<w:r\b[^>]*>.*?###PHOTO###.*?<\/w:r>/s
+    const fixedDoc = outDoc.replace(placeholderRegex, drawingXml)
+    outZip.file('word/document.xml', fixedDoc)
+  } else {
+    // 无照片：移除占位符文本
+    const fixedDoc = outDoc.replace(/###PHOTO###/g, '')
+    outZip.file('word/document.xml', fixedDoc)
+  }
 
   // 无照片：直接写盘
   if (!photoBuf) {
