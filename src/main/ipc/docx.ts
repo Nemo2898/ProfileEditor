@@ -14,6 +14,7 @@ import type { ArchivePerson } from '../../renderer/src/types/archive'
 export interface DocxFamilyMember {
   ChengWei: string
   XingMing: string
+  ChuShengRiQi: string
   NianLing: number | string
   ZhengZhiMianMao: string
   GongZuoDanWeiJiZhiWu: string
@@ -72,6 +73,7 @@ const FAMILY_ROW_COUNT = 10
 const EMPTY_DOCX_FAMILY: DocxFamilyMember = {
   ChengWei: '',
   XingMing: '',
+  ChuShengRiQi: '',
   NianLing: '',
   ZhengZhiMianMao: '',
   GongZuoDanWeiJiZhiWu: ''
@@ -90,6 +92,7 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
   const rawItems = (person.JiaTingChengYuan?.Item ?? []).map(member => ({
     ChengWei: member.ChengWei,
     XingMing: member.XingMing,
+    ChuShengRiQi: member.ChuShengRiQi?.replace(/\./g, '') ?? '',
     NianLing: (refDate && member.ChuShengRiQi?.trim()) ? calcAge(member.ChuShengRiQi, refDate) : '',
     ZhengZhiMianMao: member.ZhengZhiMianMao,
     GongZuoDanWeiJiZhiWu: member.GongZuoDanWeiJiZhiWu
@@ -103,7 +106,7 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
   return {
     XingMing: person.XingMing,
     XingBie: person.XingBie,
-    ChuShengNianYue: person.ChuShengNianYue,
+    ChuShengNianYue: person.ChuShengNianYue?.replace(/\./g, '') ?? '',
     NianLing: (refDate && person.ChuShengNianYue?.trim()) ? calcAge(person.ChuShengNianYue, refDate) : '',
     MinZu: person.MinZu,
     JiGuan: person.JiGuan,
