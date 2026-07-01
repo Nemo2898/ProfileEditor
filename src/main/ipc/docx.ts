@@ -149,7 +149,7 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
       return Buffer.from(b64, 'base64')
     },
     getSize(): [number, number] {
-      return [137, 171]
+      return [137, 106]
     }
   })
 
