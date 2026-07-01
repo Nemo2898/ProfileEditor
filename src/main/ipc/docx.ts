@@ -139,16 +139,20 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
  * @param outputPath 输出 .docx 路径
  */
 export async function renderDocx(data: DocxRenderData, templatePath: string, outputPath: string): Promise<void> {
-  // 去 alpha 通道——Word/WPS 无法正确渲染 canvas 产出的 RGBA PNG
+  // 去 alpha 通道 + 去掉 pHYs chunk（WPS 可能用它覆盖 EMU extent）
   if (data.ZhaoPian && data.ZhaoPian.length > 100) {
     const b64 = data.ZhaoPian.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(b64, 'base64')
-    const beforeCT = buf[25] // IHDR color type byte
-    console.log('[SHARP] Before removeAlpha: size=%d, colorType=%d', buf.length, beforeCT)
     const stripped = await sharp(buf).removeAlpha().png().toBuffer()
-    const afterCT = stripped[25]
-    console.log('[SHARP] After removeAlpha: size=%d, colorType=%d', stripped.length, afterCT)
-    data.ZhaoPian = 'data:image/png;base64,' + stripped.toString('base64')
+    // 手工删除 pHYs chunk：pHYs = 70 48 59 73，去掉前 4 字节 length + 4 字节 type + 9 字节 data + 4 字节 CRC = 共 21 字节
+    const pHYsIdx = stripped.indexOf(Buffer.from('pHYs'))
+    if (pHYsIdx > 0) {
+      const clean = Buffer.concat([stripped.subarray(0, pHYsIdx - 4), stripped.subarray(pHYsIdx + 9 + 4)])
+      data.ZhaoPian = 'data:image/png;base64,' + clean.toString('base64')
+    } else {
+      data.ZhaoPian = 'data:image/png;base64,' + stripped.toString('base64')
+    }
+    console.log('[SHARP] After removeAlpha+pHYs: size=%d', Buffer.from(data.ZhaoPian.replace(/^data:image\/\w+;base64,/, ''), 'base64').length)
   }
 
   const template = readFileSync(templatePath)
