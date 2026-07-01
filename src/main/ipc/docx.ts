@@ -164,7 +164,7 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
 
   const buf = doc.getZip().generate({ type: 'nodebuffer' })
 
-  // 后处理：去 a:noFill + noChangeAspect——宽度撑满，高度溢出自行裁剪蓝幕
+  // 后处理：去 a:noFill + noChangeAspect + 居中裁切
   const postZip = new PizZip(buf)
   const postDoc = postZip.file('word/document.xml')!.asText()
   const fixed = postDoc
@@ -172,6 +172,8 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
     .replace(/<a:noFill\/>/g, '')
     .replace(/<a:ln><\/a:ln>/g, '')
     .replace(/noChangeAspect="1"/g, '')
+    // 居中：167px 宽在 137px 格内溢出 30px，左移 15px 使两侧均匀裁切
+    .replace(/<a:off x="0" y="0"\/>/g, '<a:off x="-142875" y="0"/>')
   postZip.file('word/document.xml', fixed)
   const finalBuf = postZip.generate({ type: 'nodebuffer' })
   writeFileSync(outputPath, finalBuf)
