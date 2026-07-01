@@ -74,6 +74,7 @@ testPerson.ZhaoPian = `data:image/png;base64,${PHOTO_BASE64}`
 console.log('[DEBUG-D] test ZhaoPian 长度:', testPerson.ZhaoPian.length)
 
 // ========== 核心管线 ==========
+;(async () => {
 try {
   // 1. 转换：LRMX 数据 → DOCX 渲染数据（运算年龄、拍平家庭、过滤多余字段）
   const renderData = prepareDocxData(testPerson)
@@ -81,7 +82,7 @@ try {
   console.log('👪 家庭成员:', renderData.Item.map(item => `${item.ChengWei}(${item.NianLing}岁)`).join(', '))
 
   // 2. 渲染 + 写出
-  renderDocx(renderData, templatePath, outputPath)
+  await renderDocx(renderData, templatePath, outputPath)
   console.log(`\n✅ 测试成功: ${outputPath}`)
   console.log('   用 Word/WPS 打开验证版式效果')
 } catch (err) {
@@ -89,6 +90,7 @@ try {
   console.error('   可能原因：模板中的占位符格式不正确或字段名不匹配')
   process.exit(1)
 }
+})()
 
 function exists(p: string): boolean {
   try {

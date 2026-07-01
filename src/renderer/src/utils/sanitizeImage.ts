@@ -2,9 +2,9 @@
  * 证件照净化管线 — 在渲染进程（沙箱）内执行
  * 1. 文件大小上限
  * 2. magic bytes 白名单（仅 JPEG / PNG）
- * 3. <img> 解码 + 尺寸校验
- * 4. canvas 白底 + cover-fit 缩放
- * 5. JPEG 中转去 alpha → 重画 PNG（防 Word/WPS RGBA 渲染异常）
+ * 3. createImageBitmap 直接从 Blob 解码（不经过 fetch）
+ * 4. 校验分辨率上限
+ * 5. 等比居中裁剪至目标尺寸（强制 4:5）+ 剥 EXIF / 元数据 / 隐写夹带
  */
 
 // 单张图片 base64 最大字符数（约 6.7MB 编码后 ≈ 5MB 原始）
@@ -43,6 +43,32 @@ function checkMagicBytes(header: Uint8Array): string | null {
 }
 
 /**
+ * 计算等比居中裁剪的源区域
+ * 目标 800×1000（4:5），不拉伸变形，多余部分从两侧/上下裁掉
+ */
+function calcCover(sourceW: number, sourceH: number, targetW: number, targetH: number) {
+  const targetRatio = targetW / targetH
+  const sourceRatio = sourceW / sourceH
+
+  let sx = 0
+  let sy = 0
+  let sw = sourceW
+  let sh = sourceH
+
+  if (sourceRatio > targetRatio) {
+    // 源图偏宽 → 裁左右
+    sw = sourceH * targetRatio
+    sx = (sourceW - sw) / 2
+  } else {
+    // 源图偏高 → 裁上下
+    sh = sourceW / targetRatio
+    sy = (sourceH - sh) / 2
+  }
+
+  return { sx, sy, sw, sh }
+}
+
+/**
  * 主入口：返回净化后 base64（不含 data: 前缀）
  * 接收 File / Blob——不经过 fetch(dataUrl)，避免 Electron sandbox 限制
  *
@@ -72,70 +98,47 @@ export async function sanitizeImage(
     throw new Error('不支持的图片格式：仅接受 JPEG 或 PNG')
   }
 
-  // 3. 用 <img> 解码
-  const url = URL.createObjectURL(file)
-  const img = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const image = new Image()
-    image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error('图片解码失败'))
-    image.src = url
-  })
-  URL.revokeObjectURL(url)
-
-  const srcW = img.naturalWidth || 0
-  const srcH = img.naturalHeight || 0
-  if (srcW === 0 || srcH === 0) {
-    throw new Error('图片尺寸异常：无法读取宽高')
-  }
+  // 3. 沙箱内解码（直接从 Blob，不经过 fetch）
+  const bitmap = await createImageBitmap(file)
 
   // 4. 校验分辨率上限
-  const area = srcW * srcH
+  const area = bitmap.width * bitmap.height
   if (area > MAX_PIXEL_AREA) {
-    throw new Error(`图片分辨率过大：${srcW}×${srcH}`)
+    bitmap.close()
+    throw new Error(`图片分辨率过大：${bitmap.width}×${bitmap.height}`)
   }
 
-  // 5. 绘制：白底 + cover-fit 缩放（等比覆盖，居中裁剪，不拉伸变形）
+  // 5. 居中裁剪 + 重编码（剥元数据）
   const canvas = document.createElement('canvas')
   canvas.width = expectedW
   canvas.height = expectedH
   const ctx = canvas.getContext('2d')
   if (!ctx) {
+    bitmap.close()
     throw new Error('无法创建 Canvas 上下文')
   }
 
+  // 先填白再贴图，最后强制所有像素 alpha=255（防 Word/WPS 渲染透明为黑）
   ctx.fillStyle = '#FFFFFF'
   ctx.fillRect(0, 0, expectedW, expectedH)
+  const { sx, sy, sw, sh } = calcCover(bitmap.width, bitmap.height, expectedW, expectedH)
+  ctx.drawImage(bitmap, sx, sy, sw, sh, 0, 0, expectedW, expectedH)
+  bitmap.close()
 
-  const scale = Math.max(expectedW / srcW, expectedH / srcH)
-  const dw = Math.round(srcW * scale)
-  const dh = Math.round(srcH * scale)
-  const dx = Math.round((expectedW - dw) / 2)
-  const dy = Math.round((expectedH - dh) / 2)
-  ctx.drawImage(img, dx, dy, dw, dh)
-
-  // 去 alpha 通道——先转 JPEG 再重画，最终 PNG 纯 RGB（Word/WPS 对 RGBA 渲染异常）
-  const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.95)
-  const jpegImg = await new Promise<HTMLImageElement>((resolve, reject) => {
-    const image = new Image()
-    image.onload = () => resolve(image)
-    image.onerror = () => reject(new Error('JPEG 回读失败'))
-    image.src = jpegDataUrl
-  })
-
-  const finalCanvas = document.createElement('canvas')
-  finalCanvas.width = expectedW
-  finalCanvas.height = expectedH
-  const finalCtx = finalCanvas.getContext('2d')
-  if (!finalCtx) {
-    throw new Error('无法创建 Canvas 上下文')
+  const imageData = ctx.getImageData(0, 0, expectedW, expectedH)
+  for (let i = 3; i < imageData.data.length; i += 4) {
+    imageData.data[i] = 255
   }
-  finalCtx.drawImage(jpegImg, 0, 0)
+  ctx.putImageData(imageData, 0, 0)
 
-  // toBlob → PNG（纯 RGB，无 alpha）
+  // toBlob → PNG
   const cleanBlob = await new Promise<Blob>((resolve, reject) => {
-    finalCanvas.toBlob((b) => {
-      if (b) resolve(b)
-      else reject(new Error('Canvas toBlob 失败'))
+    canvas.toBlob((b) => {
+      if (b) {
+        resolve(b)
+      } else {
+        reject(new Error('Canvas toBlob 失败'))
+      }
     }, 'image/png')
   })
 

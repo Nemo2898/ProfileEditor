@@ -73,7 +73,7 @@ export function registerIpcHandlers(win: BrowserWindow): void {
       }
 
       const templatePath = join(__dirname, '../../templates/output.docx')
-      renderDocx(renderData, templatePath, outputPath)
+      await renderDocx(renderData, templatePath, outputPath)
 
       return { success: true }
     } catch (err) {

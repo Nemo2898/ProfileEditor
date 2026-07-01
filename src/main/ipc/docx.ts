@@ -8,6 +8,7 @@ import { readFileSync, writeFileSync } from 'fs'
 import PizZip from 'pizzip'
 import Docxtemplater from 'docxtemplater'
 import ImageModule from 'docxtemplater-image-module-free'
+import sharp from 'sharp'
 import type { ArchivePerson } from '../../renderer/src/types/archive'
 
 /** DOCX 渲染用的扁平家庭成员（年龄已计算） */
@@ -137,8 +138,15 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
  * @param templatePath 模板 .docx 路径
  * @param outputPath 输出 .docx 路径
  */
-export function renderDocx(data: DocxRenderData, templatePath: string, outputPath: string): void {
-  console.log('[DEBUG-C] renderDocx ZhaoPian 长度:', data.ZhaoPian?.length, '前50字符:', data.ZhaoPian?.substring(0, 50))
+export async function renderDocx(data: DocxRenderData, templatePath: string, outputPath: string): Promise<void> {
+  // 去 alpha 通道——Word/WPS 无法正确渲染 canvas 产出的 RGBA PNG
+  if (data.ZhaoPian && data.ZhaoPian.length > 100) {
+    const b64 = data.ZhaoPian.replace(/^data:image\/\w+;base64,/, '')
+    const buf = Buffer.from(b64, 'base64')
+    const stripped = await sharp(buf).removeAlpha().png().toBuffer()
+    data.ZhaoPian = 'data:image/png;base64,' + stripped.toString('base64')
+  }
+
   const template = readFileSync(templatePath)
   const zip = new PizZip(template)
 
@@ -150,11 +158,6 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
       console.log('[DEBUG-C] getImage tagValue 长度:', tagValue?.length, '前50字符:', tagValue?.substring(0, 50))
       if (!tagValue) {
         return Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
-      }
-      // 格式防护：ImageModule 永远存为 .png，非 PNG 输入会导致 Word/WPS 解析异常
-      const isJpeg = tagValue.startsWith('data:image/jpeg')
-      if (isJpeg) {
-        console.warn('[DOCX] 收到 JPEG 数据——ImageModule 会存为 .png，可能导致渲染异常。请确保 sanitizeImage 输出 PNG')
       }
       const b64 = tagValue.replace(/^data:image\/\w+;base64,/, '')
       return Buffer.from(b64, 'base64')

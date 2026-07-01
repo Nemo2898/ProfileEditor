@@ -29,6 +29,8 @@
     "fast-xml-parser": "^5.9.3",
     "lucide-react": "^1.21.0",
     "pizzip": "^3.2.0",
+    "pngjs": "^7.0.0",
+    "sharp": "^0.35.2",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
