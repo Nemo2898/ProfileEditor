@@ -143,7 +143,11 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
   if (data.ZhaoPian && data.ZhaoPian.length > 100) {
     const b64 = data.ZhaoPian.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(b64, 'base64')
+    const beforeCT = buf[25] // IHDR color type byte
+    console.log('[SHARP] Before removeAlpha: size=%d, colorType=%d', buf.length, beforeCT)
     const stripped = await sharp(buf).removeAlpha().png().toBuffer()
+    const afterCT = stripped[25]
+    console.log('[SHARP] After removeAlpha: size=%d, colorType=%d', stripped.length, afterCT)
     data.ZhaoPian = 'data:image/png;base64,' + stripped.toString('base64')
   }
 
@@ -160,7 +164,9 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
         return Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
       }
       const b64 = tagValue.replace(/^data:image\/\w+;base64,/, '')
-      return Buffer.from(b64, 'base64')
+      const imgBuf = Buffer.from(b64, 'base64')
+      console.log('[DEBUG-C] ImageBuffer colorType:', imgBuf[25], 'size:', imgBuf.length)
+      return imgBuf
     },
     getSize(): [number, number] {
       return [800, 1000]
