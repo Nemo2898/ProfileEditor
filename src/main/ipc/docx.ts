@@ -197,11 +197,15 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
     console.log('[DEBUG-EMBED]', name, '→', outPath, 'size:', imgBuf.length, 'colorType:', ct)
   }
 
-  // 后处理：去 noChangeAspect + useLocalDpi（部分 WPS 版本对这两个属性渲染异常）
+  // 后处理：清理 ImageModule 产出的 WPS 不兼容属性
   const postDoc = debugZip.file('word/document.xml')!.asText()
-  const fixed = postDoc.replace(/noChangeAspect="1"/g, 'noChangeAspect="0"')
-                         .replace(/<a14:useLocalDpi[^>]*\/>/g, '')
-                         .replace(/<a:extLst>.*?<\/a:extLst>/gs, '')
+  const fixed = postDoc
+    .replace(/ noChangeAspect="1"/g, '')
+    .replace(/ noChangeArrowheads="\w+"/g, '')
+    .replace(/<a14:useLocalDpi[^>]*\/>/g, '')
+    .replace(/<a:extLst>.*?<\/a:extLst>/gs, '')
+    .replace(/<a:noFill\/>/g, '')
+    .replace(/<a:ln>.*?<\/a:ln>/gs, '')
   debugZip.file('word/document.xml', fixed)
   const finalBuf2 = debugZip.generate({ type: 'nodebuffer' })
   writeFileSync(outputPath, finalBuf2)
