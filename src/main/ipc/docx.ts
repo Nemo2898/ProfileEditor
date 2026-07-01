@@ -175,5 +175,15 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
   doc.render(data)
 
   const buf = doc.getZip().generate({ type: 'nodebuffer' })
-  writeFileSync(outputPath, buf)
+
+  // 后处理：ImageModule 在第6页的 pic:spPr 里加了 a:noFill / a:ln，WPS 当它不填充图像
+  const PizZip2 = require('pizzip')
+  const debugZip = new PizZip2(buf)
+  const postDoc = debugZip.file('word/document.xml')!.asText()
+  const fixed = postDoc
+    .replace(/<a:noFill\/>/g, '')
+    .replace(/<a:ln><a:noFill\/><\/a:ln>/g, '')
+  debugZip.file('word/document.xml', fixed)
+  const finalBuf = debugZip.generate({ type: 'nodebuffer' })
+  writeFileSync(outputPath, finalBuf)
 }
