@@ -57,8 +57,10 @@ export interface DocxRenderData {
  * @param refDate e.g. "2026.06"
  */
 export function calcAge(birth: string, refDate: string): number {
+  if (!birth || !refDate) return 0
   const [by, bm] = String(birth).split('.').map(s => parseInt(s, 10))
   const [ry, rm] = String(refDate).split('.').map(s => parseInt(s, 10))
+  if (isNaN(by) || isNaN(bm) || isNaN(ry) || isNaN(rm)) return 0
   let age = ry - by
   if (rm < bm) age--
   return age
@@ -88,7 +90,7 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
   const rawItems = (person.JiaTingChengYuan?.Item ?? []).map(member => ({
     ChengWei: member.ChengWei,
     XingMing: member.XingMing,
-    NianLing: refDate ? calcAge(member.ChuShengRiQi, refDate) : '',
+    NianLing: (refDate && member.ChuShengRiQi?.trim()) ? calcAge(member.ChuShengRiQi, refDate) : '',
     ZhengZhiMianMao: member.ZhengZhiMianMao,
     GongZuoDanWeiJiZhiWu: member.GongZuoDanWeiJiZhiWu
   }))
@@ -102,7 +104,7 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
     XingMing: person.XingMing,
     XingBie: person.XingBie,
     ChuShengNianYue: person.ChuShengNianYue,
-    NianLing: refDate ? calcAge(person.ChuShengNianYue, refDate) : '',
+    NianLing: (refDate && person.ChuShengNianYue?.trim()) ? calcAge(person.ChuShengNianYue, refDate) : '',
     MinZu: person.MinZu,
     JiGuan: person.JiGuan,
     ChuShengDi: person.ChuShengDi,
