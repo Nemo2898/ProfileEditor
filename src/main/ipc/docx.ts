@@ -182,5 +182,20 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
   doc.render(data)
 
   const buf = doc.getZip().generate({ type: 'nodebuffer' })
+
+  // DEBUG: 把 ImageModule 实际嵌入的图片原件写出来对比
+  const { tmpdir } = require('os')
+  const { join: pJoin } = require('path')
+  const PizZip2 = require('pizzip')
+  const debugZip = new PizZip2(buf)
+  const mediaFiles = Object.keys(debugZip.files).filter(f => f.includes('media') || f.includes('image'))
+  for (const name of mediaFiles) {
+    const imgBuf = debugZip.files[name].asNodeBuffer()
+    const ct = imgBuf[25]
+    const outPath = pJoin(tmpdir(), 'debug-embedded-' + name.replace(/\//g, '_'))
+    writeFileSync(outPath, imgBuf)
+    console.log('[DEBUG-EMBED]', name, '→', outPath, 'size:', imgBuf.length, 'colorType:', ct)
+  }
+
   writeFileSync(outputPath, buf)
 }
