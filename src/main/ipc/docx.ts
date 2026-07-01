@@ -149,8 +149,8 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
       return Buffer.from(b64, 'base64')
     },
     getSize(): [number, number] {
-      // 照片格 137×209px (2058×3136 twips)，4:5 宽满即 137×172，留 38px 底部空白
-      return [137, 172]
+      // 高度满格 209px，4:5 宽度 167px→左右溢出 30px 被 cell 裁掉
+      return [167, 209]
     }
   })
 
