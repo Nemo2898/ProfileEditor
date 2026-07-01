@@ -134,68 +134,121 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
 
 /**
  * 将渲染数据填入模板 → 写出 .docx
- * @param data 经 prepareDocxData 转换后的数据
- * @param templatePath 模板 .docx 路径
- * @param outputPath 输出 .docx 路径
+ *
+ * 手动嵌入图片：绕过 ImageModule，自控 drawing XML + rels + media
+ * ImageModule 在 table cell 内渲染异常（单色方块），手写 embedding 消除了该问题
  */
 export async function renderDocx(data: DocxRenderData, templatePath: string, outputPath: string): Promise<void> {
-  // 去 alpha 通道——Word/WPS 无法正确渲染 canvas 产出的 RGBA PNG
+  // 预处理好图片数据（去 alpha）
+  let photoBuf: Buffer | null = null
   if (data.ZhaoPian && data.ZhaoPian.length > 100) {
     const b64 = data.ZhaoPian.replace(/^data:image\/\w+;base64,/, '')
     const buf = Buffer.from(b64, 'base64')
-    const beforeCT = buf[25] // IHDR color type byte
-    console.log('[SHARP] Before removeAlpha: size=%d, colorType=%d', buf.length, beforeCT)
-    const stripped = await sharp(buf).removeAlpha().png().toBuffer()
-    const afterCT = stripped[25]
-    console.log('[SHARP] After removeAlpha: size=%d, colorType=%d', stripped.length, afterCT)
-    data.ZhaoPian = 'data:image/png;base64,' + stripped.toString('base64')
+    photoBuf = await sharp(buf).removeAlpha().png().toBuffer()
   }
 
-  const template = readFileSync(templatePath)
-  const zip = new PizZip(template)
+  // 读模板，把 {%ZhaoPian} 替换为普通标签 {__PHOTO__}
+  let template = readFileSync(templatePath)
+  const tzip = new PizZip(template)
+  const tdoc = tzip.file('word/document.xml')!.asText()
+  const modifiedTdoc = tdoc.replace('{%ZhaoPian}', '{__PHOTO__}')
+  tzip.file('word/document.xml', modifiedTdoc)
 
-  // 图片模块：证件照注入
-  const imageModule = new ImageModule({
-    centered: false,
-    fileType: 'docx',
-    getImage(tagValue: string): Buffer {
-      console.log('[DEBUG-C] getImage tagValue 长度:', tagValue?.length, '前50字符:', tagValue?.substring(0, 50))
-      if (!tagValue) {
-        return Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
-      }
-      const b64 = tagValue.replace(/^data:image\/\w+;base64,/, '')
-      const imgBuf = Buffer.from(b64, 'base64')
-      console.log('[DEBUG-C] ImageBuffer colorType:', imgBuf[25], 'size:', imgBuf.length)
-      return imgBuf
-    },
-    getSize(): [number, number] {
-      return [800, 1000]
-    }
-  })
-
-  const doc = new Docxtemplater(zip, {
+  const doc = new Docxtemplater(tzip, {
     paragraphLoop: true,
-    linebreaks: true,
-    modules: [imageModule]
+    linebreaks: true
   })
 
-  doc.render(data)
-
+  doc.render({ ...data, __PHOTO__: '###PHOTO###', ZhaoPian: undefined as unknown as string })
   const buf = doc.getZip().generate({ type: 'nodebuffer' })
+  const outZip = new PizZip(buf)
 
-  // DEBUG: 把 ImageModule 实际嵌入的图片原件写出来对比
-  const { tmpdir } = require('os')
-  const { join: pJoin } = require('path')
-  const PizZip2 = require('pizzip')
-  const debugZip = new PizZip2(buf)
-  const mediaFiles = Object.keys(debugZip.files).filter(f => f.includes('media') || f.includes('image'))
-  for (const name of mediaFiles) {
-    const imgBuf = debugZip.files[name].asNodeBuffer()
-    const ct = imgBuf[25]
-    const outPath = pJoin(tmpdir(), 'debug-embedded-' + name.replace(/\//g, '_'))
-    writeFileSync(outPath, imgBuf)
-    console.log('[DEBUG-EMBED]', name, '→', outPath, 'size:', imgBuf.length, 'colorType:', ct)
+  // 替换占位符 → drawing XML + 嵌入图片
+  const outDoc = outZip.file('word/document.xml')!.asText()
+  const PHOTO_EMU_W = Math.round(800 * 9525)
+  const PHOTO_EMU_H = Math.round(1000 * 9525)
+
+  const drawingXml = photoBuf
+    ? `<w:drawing>
+      <wp:inline distT="0" distB="0" distL="0" distR="0">
+        <wp:extent cx="${PHOTO_EMU_W}" cy="${PHOTO_EMU_H}"/>
+        <wp:effectExtent l="0" t="0" r="0" b="0"/>
+        <wp:docPr id="1" name="photo" descr="证件照"/>
+        <wp:cNvGraphicFramePr>
+          <a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/>
+        </wp:cNvGraphicFramePr>
+        <a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main">
+          <a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture">
+            <pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture">
+              <pic:nvPicPr>
+                <pic:cNvPr id="0" name="photo" descr="证件照"/>
+                <pic:cNvPicPr>
+                  <a:picLocks noChangeAspect="1" noChangeArrowheads="1"/>
+                </pic:cNvPicPr>
+              </pic:nvPicPr>
+              <pic:blipFill>
+                <a:blip r:embed="rIdPhoto"/>
+                <a:stretch><a:fillRect/></a:stretch>
+              </pic:blipFill>
+              <pic:spPr bwMode="auto">
+                <a:xfrm>
+                  <a:off x="0" y="0"/>
+                  <a:ext cx="${PHOTO_EMU_W}" cy="${PHOTO_EMU_H}"/>
+                </a:xfrm>
+                <a:prstGeom prst="rect"><a:avLst/></a:prstGeom>
+                <a:noFill/>
+                <a:ln><a:noFill/></a:ln>
+              </pic:spPr>
+            </pic:pic>
+          </a:graphicData>
+        </a:graphic>
+      </wp:inline>
+    </w:drawing>`
+    : ''
+
+  const fixedDoc = outDoc.replace(/###PHOTO###/g, drawingXml)
+  outZip.file('word/document.xml', fixedDoc)
+
+  // 无照片：直接写盘
+  if (!photoBuf) {
+    const finalBuf = outZip.generate({ type: 'nodebuffer' })
+    writeFileSync(outputPath, finalBuf)
+    return
   }
 
-  writeFileSync(outputPath, buf)
+  // 有照片：手动添加 media 文件 + rels + content type
+  const IMAGE_NAME = 'media/photo.png'
+  outZip.file(IMAGE_NAME, photoBuf, { binary: true })
+
+  // 添加 relationship
+  const relsPath = 'word/_rels/document.xml.rels'
+  const relsXml = outZip.file(relsPath)!.asText()
+  const newRels = relsXml.replace(
+    '</Relationships>',
+    '<Relationship Id="rIdPhoto" Type="http://schemas.openxmlformats.org/officeDocument/2006/relationships/image" Target="media/photo.png"/></Relationships>'
+  )
+  outZip.file(relsPath, newRels)
+
+  // 添加 Content Type（如果还没有）
+  const ctPath = '[Content_Types].xml'
+  let ctXml = outZip.file(ctPath)!.asText()
+  if (!ctXml.includes('Extension="png"')) {
+    ctXml = ctXml.replace(
+      '</Types>',
+      '<Default Extension="png" ContentType="image/png"/></Types>'
+    )
+    outZip.file(ctPath, ctXml)
+  }
+
+  // 移除旧的 {%ZhaoPian} 占位词在 header/footer 中的残留
+  const xmlFiles = Object.keys(outZip.files).filter(f => f.endsWith('.xml'))
+  for (const xmlFile of xmlFiles) {
+    const content = outZip.file(xmlFile)!.asText()
+    if (content.includes('###PHOTO###')) {
+      outZip.file(xmlFile, content.replace(/###PHOTO###/g, ''))
+    }
+  }
+
+  const finalBuf = outZip.generate({ type: 'nodebuffer' })
+  writeFileSync(outputPath, finalBuf)
 }
