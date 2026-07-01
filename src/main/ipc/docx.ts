@@ -8,7 +8,6 @@ import { readFileSync, writeFileSync } from 'fs'
 import PizZip from 'pizzip'
 import Docxtemplater from 'docxtemplater'
 import ImageModule from 'docxtemplater-image-module-free'
-import sharp from 'sharp'
 import type { ArchivePerson } from '../../renderer/src/types/archive'
 
 /** DOCX 渲染用的扁平家庭成员（年龄已计算） */
@@ -134,23 +133,11 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
 
 /**
  * 将渲染数据填入模板 → 写出 .docx
- * @param data 经 prepareDocxData 转换后的数据
- * @param templatePath 模板 .docx 路径
- * @param outputPath 输出 .docx 路径
  */
-export async function renderDocx(data: DocxRenderData, templatePath: string, outputPath: string): Promise<void> {
-  // 去 alpha 通道
-  if (data.ZhaoPian && data.ZhaoPian.length > 100) {
-    const b64 = data.ZhaoPian.replace(/^data:image\/\w+;base64,/, '')
-    const buf = Buffer.from(b64, 'base64')
-    const stripped = await sharp(buf).removeAlpha().png().toBuffer()
-    data.ZhaoPian = 'data:image/png;base64,' + stripped.toString('base64')
-  }
-
+export function renderDocx(data: DocxRenderData, templatePath: string, outputPath: string): void {
   const template = readFileSync(templatePath)
   const zip = new PizZip(template)
 
-  // 图片模块：证件照注入
   const imageModule = new ImageModule({
     centered: false,
     fileType: 'docx',
@@ -176,22 +163,14 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
 
   const buf = doc.getZip().generate({ type: 'nodebuffer' })
 
-  // 后处理：替换 ImageModule drawing 为 docx 包验证过的精确模板
-  const PizZip2 = require('pizzip')
-  const debugZip = new PizZip2(buf)
-  
-  // 记下 rId（ImageModule 生成的 relationship ID）
-  const postDoc = debugZip.file('word/document.xml')!.asText()
-  const rIdMatch = postDoc.match(/r:embed="(rId\d+)"/)
-  const rId = rIdMatch ? rIdMatch[1] : 'rId5'
-  
-  // 从 docx 包验证过的模板构造 drawing XML（仅换 EMU 和 rId）
-  const PHOTO_EMU_W = 1304925
-  const PHOTO_EMU_H = 1628775
-  const newDrawing = `<w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${PHOTO_EMU_W}" cy="${PHOTO_EMU_H}"/><wp:effectExtent t="0" r="0" b="0" l="0"/><wp:docPr id="1" name="" descr="" title=""/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="0" name="" descr=""/><pic:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></pic:cNvPicPr></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rId}" cstate="none"/><a:srcRect/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr bwMode="auto"><a:xfrm><a:off x="0" y="0"/><a:ext cx="${PHOTO_EMU_W}" cy="${PHOTO_EMU_H}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing>`
-  
-  const fixed = postDoc.replace(/<w:drawing>.*?<\/w:drawing>/s, newDrawing)
-  debugZip.file('word/document.xml', fixed)
-  const finalBuf = debugZip.generate({ type: 'nodebuffer' })
+  // 后处理：移除 a:noFill（WPS 将 pic:spPr 的 noFill 解读为"不填充图片"）
+  const postZip = new PizZip(buf)
+  const postDoc = postZip.file('word/document.xml')!.asText()
+  const fixed = postDoc
+    .replace(/<a:ln><a:noFill\/><\/a:ln>/g, '')
+    .replace(/<a:noFill\/>/g, '')
+    .replace(/<a:ln><\/a:ln>/g, '')
+  postZip.file('word/document.xml', fixed)
+  const finalBuf = postZip.generate({ type: 'nodebuffer' })
   writeFileSync(outputPath, finalBuf)
 }
