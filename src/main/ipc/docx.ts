@@ -181,8 +181,9 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
   const debugZip = new PizZip2(buf)
   const postDoc = debugZip.file('word/document.xml')!.asText()
   const fixed = postDoc
-    .replace(/<a:noFill\/>/g, '')
     .replace(/<a:ln><a:noFill\/><\/a:ln>/g, '')
+    .replace(/<a:noFill\/>/g, '')
+    .replace(/<a:ln><\/a:ln>/g, '')
   debugZip.file('word/document.xml', fixed)
   const finalBuf = debugZip.generate({ type: 'nodebuffer' })
   writeFileSync(outputPath, finalBuf)
