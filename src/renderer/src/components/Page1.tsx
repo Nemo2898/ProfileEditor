@@ -8,18 +8,6 @@ import { TextInput, TextArea, TD, TH } from './FormFields'
 import { sanitizeImage } from '../utils/sanitizeImage'
 import { flashError } from '../utils/flash'
 
-let debugBarCount = 0
-function showDebugBar(msg: string): void {
-  const bar = document.createElement('div')
-  bar.className = 'debug-bar'
-  bar.textContent = `[${++debugBarCount}] ${msg}`
-  bar.style.cssText =
-    'position:fixed;right:8px;bottom:' + (8 + (debugBarCount - 1) * 28) +
-    'px;background:#1e293b;color:#22d3ee;padding:4px 12px;border-radius:6px;z-index:9999;font-size:12px;font-family:monospace;pointer-events:none;opacity:0.92'
-  document.body.appendChild(bar)
-  setTimeout(() => { bar.style.opacity = '0'; setTimeout(() => bar.remove(), 500) }, 12000)
-}
-
 export default function Page1(): React.JSX.Element {
   const data = useArchiveStore((s) => {
     const doc = s.activeId ? s.docs[s.activeId] : undefined
@@ -38,15 +26,8 @@ export default function Page1(): React.JSX.Element {
     }
 
     try {
-      showDebugBar(`[DEBUG] 源图 ${file.name} ${file.size}bytes type:${file.type}`)
-      const t0 = performance.now()
       const cleanBase64 = await sanitizeImage(file, 0.8, 800, 1000)
-      const t1 = performance.now()
-      showDebugBar(`[DEBUG-A] sanitize output: ${cleanBase64.length} chars, ${(t1-t0).toFixed(0)}ms`)
       setField('ZhaoPian', `data:image/png;base64,${cleanBase64}`)
-      const stored = useArchiveStore.getState()
-      const storedDoc = stored.activeId ? stored.docs[stored.activeId] : null
-      showDebugBar(`[DEBUG-B] store ZhaoPian: ${storedDoc?.data.ZhaoPian?.length ?? 0} chars`)
     } catch (err) {
       flashError('证件照处理失败：' + String(err))
     } finally {

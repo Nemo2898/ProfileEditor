@@ -62,16 +62,6 @@ export function registerIpcHandlers(win: BrowserWindow): void {
       const person = data as unknown as ArchivePerson
       const renderData = prepareDocxData(person)
 
-      // DEBUG：把 ZhaoPian 解码写磁盘，验证 sanitizeImage 产出
-      if (renderData.ZhaoPian && renderData.ZhaoPian.length > 100) {
-        const { writeFileSync: wfs } = require('fs')
-        const { tmpdir } = require('os')
-        const b64 = renderData.ZhaoPian.replace(/^data:image\/\w+;base64,/, '')
-        const debugPath = require('path').join(tmpdir(), 'debug-decoded-photo.png')
-        wfs(debugPath, Buffer.from(b64, 'base64'))
-        console.log('[DEBUG] 写入', debugPath, '请用图片查看器打开验证')
-      }
-
       const templatePath = join(__dirname, '../../templates/output.docx')
       await renderDocx(renderData, templatePath, outputPath)
 
