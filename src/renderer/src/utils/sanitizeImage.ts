@@ -3,8 +3,8 @@
  * 1. 文件大小上限
  * 2. magic bytes 白名单（仅 JPEG / PNG）
  * 3. <img> 解码 + 尺寸校验
- * 4. canvas 白底 + cover-fit 缩放（居中填满、不等比裁剪）
- * 5. toBlob PNG + base64 编码
+ * 4. canvas 白底 + cover-fit 缩放
+ * 5. JPEG 中转去 alpha → 重画 PNG（防 Word/WPS RGBA 渲染异常）
  */
 
 // 单张图片 base64 最大字符数（约 6.7MB 编码后 ≈ 5MB 原始）
@@ -113,9 +113,27 @@ export async function sanitizeImage(
   const dy = Math.round((expectedH - dh) / 2)
   ctx.drawImage(img, dx, dy, dw, dh)
 
-  // toBlob → PNG
+  // 去 alpha 通道——先转 JPEG 再重画，最终 PNG 纯 RGB（Word/WPS 对 RGBA 渲染异常）
+  const jpegDataUrl = canvas.toDataURL('image/jpeg', 0.95)
+  const jpegImg = await new Promise<HTMLImageElement>((resolve, reject) => {
+    const image = new Image()
+    image.onload = () => resolve(image)
+    image.onerror = () => reject(new Error('JPEG 回读失败'))
+    image.src = jpegDataUrl
+  })
+
+  const finalCanvas = document.createElement('canvas')
+  finalCanvas.width = expectedW
+  finalCanvas.height = expectedH
+  const finalCtx = finalCanvas.getContext('2d')
+  if (!finalCtx) {
+    throw new Error('无法创建 Canvas 上下文')
+  }
+  finalCtx.drawImage(jpegImg, 0, 0)
+
+  // toBlob → PNG（纯 RGB，无 alpha）
   const cleanBlob = await new Promise<Blob>((resolve, reject) => {
-    canvas.toBlob((b) => {
+    finalCanvas.toBlob((b) => {
       if (b) resolve(b)
       else reject(new Error('Canvas toBlob 失败'))
     }, 'image/png')
