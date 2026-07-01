@@ -149,7 +149,7 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
       return Buffer.from(b64, 'base64')
     },
     getSize(): [number, number] {
-      return [137, 172]
+      return [137, 171]
     }
   })
 
@@ -170,7 +170,6 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
     .replace(/<a:ln><a:noFill\/><\/a:ln>/g, '')
     .replace(/<a:noFill\/>/g, '')
     .replace(/<a:ln><\/a:ln>/g, '')
-    .replace(/noChangeAspect="1"/g, '')
   postZip.file('word/document.xml', fixed)
   const finalBuf = postZip.generate({ type: 'nodebuffer' })
   writeFileSync(outputPath, finalBuf)
