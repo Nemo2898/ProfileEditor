@@ -149,8 +149,7 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
       return Buffer.from(b64, 'base64')
     },
     getSize(): [number, number] {
-      // 高度满格 209px，4:5 宽度 167px→左右溢出 30px 被 cell 裁掉
-      return [167, 209]
+      return [137, 172]
     }
   })
 
@@ -164,7 +163,7 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
 
   const buf = doc.getZip().generate({ type: 'nodebuffer' })
 
-  // 后处理：去 a:noFill + noChangeAspect + 居中裁切
+  // 后处理：去 a:noFill + noChangeAspect
   const postZip = new PizZip(buf)
   const postDoc = postZip.file('word/document.xml')!.asText()
   const fixed = postDoc
@@ -172,8 +171,6 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
     .replace(/<a:noFill\/>/g, '')
     .replace(/<a:ln><\/a:ln>/g, '')
     .replace(/noChangeAspect="1"/g, '')
-    // 居中：167px 宽在 137px 格内溢出 30px，不偏移——自然裁右侧即可
-    .replace(/<a:off x="-142875" y="0"\/>/g, '<a:off x="0" y="0"/>')
   postZip.file('word/document.xml', fixed)
   const finalBuf = postZip.generate({ type: 'nodebuffer' })
   writeFileSync(outputPath, finalBuf)
