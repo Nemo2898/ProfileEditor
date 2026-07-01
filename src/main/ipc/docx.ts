@@ -172,8 +172,8 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
     .replace(/<a:noFill\/>/g, '')
     .replace(/<a:ln><\/a:ln>/g, '')
     .replace(/noChangeAspect="1"/g, '')
-    // 居中：167px 宽在 137px 格内溢出 30px，左移 15px 使两侧均匀裁切
-    .replace(/<a:off x="0" y="0"\/>/g, '<a:off x="-142875" y="0"/>')
+    // 居中：167px 宽在 137px 格内溢出 30px，不偏移——自然裁右侧即可
+    .replace(/<a:off x="-142875" y="0"\/>/g, '<a:off x="0" y="0"/>')
   postZip.file('word/document.xml', fixed)
   const finalBuf = postZip.generate({ type: 'nodebuffer' })
   writeFileSync(outputPath, finalBuf)
