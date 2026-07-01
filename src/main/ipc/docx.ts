@@ -176,14 +176,21 @@ export async function renderDocx(data: DocxRenderData, templatePath: string, out
 
   const buf = doc.getZip().generate({ type: 'nodebuffer' })
 
-  // 后处理：ImageModule 在第6页的 pic:spPr 里加了 a:noFill / a:ln，WPS 当它不填充图像
+  // 后处理：替换 ImageModule drawing 为 docx 包验证过的精确模板
   const PizZip2 = require('pizzip')
   const debugZip = new PizZip2(buf)
+  
+  // 记下 rId（ImageModule 生成的 relationship ID）
   const postDoc = debugZip.file('word/document.xml')!.asText()
-  const fixed = postDoc
-    .replace(/<a:ln><a:noFill\/><\/a:ln>/g, '')
-    .replace(/<a:noFill\/>/g, '')
-    .replace(/<a:ln><\/a:ln>/g, '')
+  const rIdMatch = postDoc.match(/r:embed="(rId\d+)"/)
+  const rId = rIdMatch ? rIdMatch[1] : 'rId5'
+  
+  // 从 docx 包验证过的模板构造 drawing XML（仅换 EMU 和 rId）
+  const PHOTO_EMU_W = 7620000
+  const PHOTO_EMU_H = 9525000
+  const newDrawing = `<w:drawing><wp:inline distT="0" distB="0" distL="0" distR="0"><wp:extent cx="${PHOTO_EMU_W}" cy="${PHOTO_EMU_H}"/><wp:effectExtent t="0" r="0" b="0" l="0"/><wp:docPr id="1" name="" descr="" title=""/><wp:cNvGraphicFramePr><a:graphicFrameLocks xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main" noChangeAspect="1"/></wp:cNvGraphicFramePr><a:graphic xmlns:a="http://schemas.openxmlformats.org/drawingml/2006/main"><a:graphicData uri="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:pic xmlns:pic="http://schemas.openxmlformats.org/drawingml/2006/picture"><pic:nvPicPr><pic:cNvPr id="0" name="" descr=""/><pic:cNvPicPr><a:picLocks noChangeAspect="1" noChangeArrowheads="1"/></pic:cNvPicPr></pic:nvPicPr><pic:blipFill><a:blip r:embed="${rId}" cstate="none"/><a:srcRect/><a:stretch><a:fillRect/></a:stretch></pic:blipFill><pic:spPr bwMode="auto"><a:xfrm><a:off x="0" y="0"/><a:ext cx="${PHOTO_EMU_W}" cy="${PHOTO_EMU_H}"/></a:xfrm><a:prstGeom prst="rect"><a:avLst/></a:prstGeom></pic:spPr></pic:pic></a:graphicData></a:graphic></wp:inline></w:drawing>`
+  
+  const fixed = postDoc.replace(/<w:drawing>.*?<\/w:drawing>/s, newDrawing)
   debugZip.file('word/document.xml', fixed)
   const finalBuf = debugZip.generate({ type: 'nodebuffer' })
   writeFileSync(outputPath, finalBuf)
