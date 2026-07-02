@@ -5,7 +5,7 @@
 import { ipcMain, BrowserWindow, app } from 'electron'
 import { join } from 'path'
 import { openLrmx, saveLrmx, getRuntimeDir, newBlankDoc, clearRuntimeDocs } from './xml'
-import { showOpenDialog, showSaveDialog, showSaveDocxDialog } from './dialog'
+import { showOpenDialog, showSaveDialog } from './dialog'
 import { prepareDocxData, renderDocx } from './docx'
 import type { ArchivePerson } from '../../renderer/src/types/archive'
 
@@ -49,11 +49,6 @@ export function registerIpcHandlers(win: BrowserWindow): void {
   // 另存为对话框
   ipcMain.handle('dialog-save', async (_event, defaultName?: string) => {
     return showSaveDialog(win, defaultName)
-  })
-
-  // 导出 DOCX 对话框
-  ipcMain.handle('dialog-save-docx', async () => {
-    return showSaveDocxDialog(win)
   })
 
   // 导出 DOCX

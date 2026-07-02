@@ -128,51 +128,37 @@ export default function EditorLayout(): React.JSX.Element {
     const targetPath = await window.api.dialogSave(data.XingMing?.trim() || undefined)
     if (!targetPath) return
 
+    const isDocx = targetPath.endsWith('.docx')
+
     try {
-      const result = await window.api.saveLrmx(
-        doc.data as unknown as Record<string, unknown>,
-        targetPath
-      )
-      if (result.success) {
-        const label = targetPath.split(/[/\\]/).pop() || '档案.lrmx'
-        const state = useArchiveStore.getState()
-        const updated = state.docs[doc.id]
-        if (updated) {
-          useArchiveStore.setState({
-            docs: { ...state.docs, [doc.id]: { ...updated, filePath: targetPath, label, isDirty: false } }
-          })
+      if (isDocx) {
+        const result = await window.api.exportDocx(
+          doc.data as unknown as Record<string, unknown>,
+          targetPath
+        )
+        if (!result.success) {
+          flashError('导出失败：' + (result.error || '未知错误'))
         }
       } else {
-        flashError('保存失败：' + (result.error || '未知错误'))
+        const result = await window.api.saveLrmx(
+          doc.data as unknown as Record<string, unknown>,
+          targetPath
+        )
+        if (!result.success) {
+          flashError('保存失败：' + (result.error || '未知错误'))
+        }
+      }
+      // 更新标签
+      const label = targetPath.split(/[/\\]/).pop() || '档案.lrmx'
+      const state = useArchiveStore.getState()
+      const updated = state.docs[doc.id]
+      if (updated) {
+        useArchiveStore.setState({
+          docs: { ...state.docs, [doc.id]: { ...updated, filePath: targetPath, label, isDirty: false } }
+        })
       }
     } catch (err) {
-      flashError('保存失败：' + String(err))
-    }
-  }, [activeId])
-
-  // 导出 DOCX
-  const handleExportDocx = useCallback(async () => {
-    const docValues = Object.values(useArchiveStore.getState().docs)
-    const doc = docValues.find((d) => d.id === activeId)
-    if (!doc) return
-
-    const data = doc.data as unknown as ArchivePerson
-    const birthErr = validateSaveBirthDates(data)
-    if (birthErr) { flashError(birthErr); return }
-
-    const outputPath = await window.api.dialogSaveDocx()
-    if (!outputPath) return
-
-    try {
-      const result = await window.api.exportDocx(
-        doc.data as unknown as Record<string, unknown>,
-        outputPath
-      )
-      if (!result.success) {
-        flashError('导出失败：' + (result.error || '未知错误'))
-      }
-    } catch (err) {
-      flashError('导出失败：' + String(err))
+      flashError((isDocx ? '导出' : '保存') + '失败：' + String(err))
     }
   }, [activeId])
 
@@ -201,7 +187,7 @@ export default function EditorLayout(): React.JSX.Element {
               </button>
             </div>
           </div>
-          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} onExportDocx={handleExportDocx} />
+          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} />
         </div>
       ) : (
         <div className="flex flex-1 overflow-hidden">
@@ -210,7 +196,7 @@ export default function EditorLayout(): React.JSX.Element {
               {currentPage === 1 ? <Page1 /> : <Page2 />}
             </PageViewer>
           </div>
-          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} onExportDocx={handleExportDocx} />
+          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} />
         </div>
       )}
     </div>

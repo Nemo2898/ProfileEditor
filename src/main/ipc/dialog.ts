@@ -24,47 +24,26 @@ export async function showOpenDialog(win: BrowserWindow): Promise<string[] | nul
 }
 
 /**
- * 另存为 .lrmx 对话框 → 返回选中路径或 null
+ * 另存为对话框（.lrmx / .docx）→ 返回选中路径或 null
  * @param win
  * @param defaultName 默认文件名（不含后缀），默认"新建档案"
  */
 export async function showSaveDialog(win: BrowserWindow, defaultName?: string): Promise<string | null> {
   const name = defaultName || '新建档案'
   const result = await dialog.showSaveDialog(win, {
-    title: '保存档案',
+    title: '另存为',
     defaultPath: `${name}.lrmx`,
     filters: [
-      { name: '档案文件', extensions: ['lrmx'] },
-      { name: '所有文件', extensions: ['*'] }
+      { name: '档案文件 (.lrmx)', extensions: ['lrmx'] },
+      { name: 'Word 文档 (.docx)', extensions: ['docx'] }
     ]
   })
   if (result.canceled || !result.filePath) {
     return null
   }
   let path = result.filePath
-  if (!path.endsWith('.lrmx')) {
+  if (!path.endsWith('.lrmx') && !path.endsWith('.docx')) {
     path += '.lrmx'
-  }
-  return path
-}
-
-/**
- * 另存为 .docx 对话框 → 返回选中路径或 null
- */
-export async function showSaveDocxDialog(win: BrowserWindow): Promise<string | null> {
-  const result = await dialog.showSaveDialog(win, {
-    title: '导出 DOCX',
-    defaultPath: '新建档案.docx',
-    filters: [
-      { name: 'Word 文档', extensions: ['docx'] }
-    ]
-  })
-  if (result.canceled || !result.filePath) {
-    return null
-  }
-  let path = result.filePath
-  if (!path.endsWith('.docx')) {
-    path += '.docx'
   }
   return path
 }

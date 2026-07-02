@@ -2,7 +2,7 @@
  * ToolPanel — 右侧工具栏（双列）
  */
 
-import { FilePlus, FolderOpen, Save, Files, PencilRuler, Layers, FileDown } from 'lucide-react'
+import { FilePlus, FolderOpen, Save, Files, PencilRuler, Layers } from 'lucide-react'
 import type { ReactNode } from 'react'
 
 interface ToolButtonProps {
@@ -29,13 +29,11 @@ interface ToolPanelProps {
   onOpen: () => void
   onSave: () => void
   onSaveAs: () => void
-  onExportDocx?: () => void
 }
 
-export default function ToolPanel({ onNew, onOpen, onSave, onSaveAs, onExportDocx }: ToolPanelProps): React.JSX.Element {
+export default function ToolPanel({ onNew, onOpen, onSave, onSaveAs }: ToolPanelProps): React.JSX.Element {
   return (
     <div className="flex flex-col bg-slate-900 border-l border-slate-700 px-2 py-4 h-full w-[128px] shrink-0">
-      {/* 工具栏：双列网格 */}
       <div className="grid grid-cols-2 gap-1">
         <ToolButton icon={<FilePlus size={20} />} label="新建" onClick={onNew} />
         <ToolButton icon={<FolderOpen size={20} />} label="打开" onClick={onOpen} />
@@ -46,16 +44,6 @@ export default function ToolPanel({ onNew, onOpen, onSave, onSaveAs, onExportDoc
         <ToolButton icon={<Layers size={20} />} label="批量生成" />
         <ToolButton icon={<PencilRuler size={20} />} label="批量修改" />
       </div>
-
-      {/* 分隔 */}
-      <div className="w-full h-px bg-slate-700 my-3" />
-
-      {/* 导出 */}
-      <div className="grid grid-cols-2 gap-1">
-        <ToolButton icon={<FileDown size={20} />} label="导出 DOCX" onClick={onExportDocx} />
-      </div>
-
-      {/* 预留空间 */}
       <div className="flex-1" />
       <div className="text-[10px] text-slate-600 text-center mt-2">v1.0</div>
     </div>
