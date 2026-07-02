@@ -6,7 +6,7 @@ import { ipcMain, BrowserWindow, app } from 'electron'
 import { join } from 'path'
 import { openLrmx, saveLrmx, getRuntimeDir, newBlankDoc, clearRuntimeDocs } from './xml'
 import { showOpenDialog, showSaveDialog, showSaveDocxDialog, showSavePdfDialog } from './dialog'
-import { prepareDocxData, renderDocx, exportDocxToPdf } from './docx'
+import { prepareDocxData, renderDocx, generatePdf } from './docx'
 import type { ArchivePerson } from '../../renderer/src/types/archive'
 
 /** runtime_docs 目录缓存 */
@@ -80,8 +80,9 @@ export function registerIpcHandlers(win: BrowserWindow): void {
   ipcMain.handle('export-pdf', async (_event, data: Record<string, unknown>, outputPath: string) => {
     try {
       const person = data as unknown as ArchivePerson
-      const templatePath = join(__dirname, '../../templates/output.docx')
-      await exportDocxToPdf(person, templatePath, outputPath)
+      const pdfBuf = await generatePdf(person)
+      const { writeFileSync: wfs } = require('fs')
+      wfs(outputPath, pdfBuf)
       return { success: true }
     } catch (err) {
       return { success: false, error: String(err) }
