@@ -30,10 +30,9 @@ interface ToolPanelProps {
   onSave: () => void
   onSaveAs: () => void
   onExportDocx?: () => void
-  onExportPdf?: () => void
 }
 
-export default function ToolPanel({ onNew, onOpen, onSave, onSaveAs, onExportDocx, onExportPdf }: ToolPanelProps): React.JSX.Element {
+export default function ToolPanel({ onNew, onOpen, onSave, onSaveAs, onExportDocx }: ToolPanelProps): React.JSX.Element {
   return (
     <div className="flex flex-col bg-slate-900 border-l border-slate-700 px-2 py-4 h-full w-[128px] shrink-0">
       {/* 工具栏：双列网格 */}
@@ -58,7 +57,6 @@ export default function ToolPanel({ onNew, onOpen, onSave, onSaveAs, onExportDoc
       {/* 导出 */}
       <div className="grid grid-cols-2 gap-1">
         <ToolButton icon={<FileDown size={20} />} label="导出 DOCX" onClick={onExportDocx} />
-        <ToolButton icon={<FileDown size={20} />} label="导出 PDF" onClick={onExportPdf} />
       </div>
 
       {/* 预留空间 */}
