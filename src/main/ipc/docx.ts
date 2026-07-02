@@ -190,7 +190,7 @@ export async function generatePdf(person: ArchivePerson): Promise<Buffer> {
   const data = prepareDocxData(person)
   const familyRows = data.Item.slice(0, FAMILY_ROW_COUNT)
 
-  const esc = (s: string) => s.replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
+  const esc = (s: unknown) => String(s ?? '').replace(/&/g, '&amp;').replace(/</g, '&lt;').replace(/>/g, '&gt;')
 
   const photoHtml = data.ZhaoPian && data.ZhaoPian.length > 100
     ? `<img src="${esc(data.ZhaoPian)}" style="width:100%;height:100%;object-fit:cover"/>`
