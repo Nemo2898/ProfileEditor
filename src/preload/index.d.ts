@@ -5,9 +5,7 @@ export interface LrmxApi {
   dialogOpen: () => Promise<string[] | null>
   dialogSave: (defaultName?: string) => Promise<string | null>
   dialogSaveDocx: () => Promise<string | null>
-  dialogSavePdf: () => Promise<string | null>
   exportDocx: (data: Record<string, unknown>, outputPath: string) => Promise<{ success: boolean; error?: string }>
-  exportPdf: (data: Record<string, unknown>, outputPath: string) => Promise<{ success: boolean; error?: string }>
   windowMinimize: () => Promise<void>
   windowMaximize: () => Promise<void>
   windowClose: () => Promise<void>

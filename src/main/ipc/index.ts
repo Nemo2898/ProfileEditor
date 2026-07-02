@@ -5,8 +5,8 @@
 import { ipcMain, BrowserWindow, app } from 'electron'
 import { join } from 'path'
 import { openLrmx, saveLrmx, getRuntimeDir, newBlankDoc, clearRuntimeDocs } from './xml'
-import { showOpenDialog, showSaveDialog, showSaveDocxDialog, showSavePdfDialog } from './dialog'
-import { prepareDocxData, renderDocx, generatePdf } from './docx'
+import { showOpenDialog, showSaveDialog, showSaveDocxDialog } from './dialog'
+import { prepareDocxData, renderDocx } from './docx'
 import type { ArchivePerson } from '../../renderer/src/types/archive'
 
 /** runtime_docs 目录缓存 */
@@ -56,11 +56,6 @@ export function registerIpcHandlers(win: BrowserWindow): void {
     return showSaveDocxDialog(win)
   })
 
-  // 导出 PDF 对话框
-  ipcMain.handle('dialog-save-pdf', async () => {
-    return showSavePdfDialog(win)
-  })
-
   // 导出 DOCX
   ipcMain.handle('export-docx', async (_event, data: Record<string, unknown>, outputPath: string) => {
     try {
@@ -70,19 +65,6 @@ export function registerIpcHandlers(win: BrowserWindow): void {
       const templatePath = join(__dirname, '../../templates/output.docx')
       renderDocx(renderData, templatePath, outputPath)
 
-      return { success: true }
-    } catch (err) {
-      return { success: false, error: String(err) }
-    }
-  })
-
-  // 导出 PDF
-  ipcMain.handle('export-pdf', async (_event, data: Record<string, unknown>, outputPath: string) => {
-    try {
-      const person = data as unknown as ArchivePerson
-      const pdfBuf = await generatePdf(person)
-      const { writeFileSync: wfs } = require('fs')
-      wfs(outputPath, pdfBuf)
       return { success: true }
     } catch (err) {
       return { success: false, error: String(err) }

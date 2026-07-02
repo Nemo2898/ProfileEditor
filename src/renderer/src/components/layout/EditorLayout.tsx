@@ -176,32 +176,6 @@ export default function EditorLayout(): React.JSX.Element {
     }
   }, [activeId])
 
-  // 导出 PDF
-  const handleExportPdf = useCallback(async () => {
-    const docValues = Object.values(useArchiveStore.getState().docs)
-    const doc = docValues.find((d) => d.id === activeId)
-    if (!doc) return
-
-    const data = doc.data as unknown as ArchivePerson
-    const birthErr = validateSaveBirthDates(data)
-    if (birthErr) { flashError(birthErr); return }
-
-    const outputPath = await window.api.dialogSavePdf()
-    if (!outputPath) return
-
-    try {
-      const result = await window.api.exportPdf(
-        doc.data as unknown as Record<string, unknown>,
-        outputPath
-      )
-      if (!result.success) {
-        flashError('导出 PDF 失败：' + (result.error || '未知错误'))
-      }
-    } catch (err) {
-      flashError('导出 PDF 失败：' + String(err))
-    }
-  }, [activeId])
-
   return (
     <div className="flex flex-col h-screen bg-slate-200">
       <TitleBar />
@@ -227,7 +201,7 @@ export default function EditorLayout(): React.JSX.Element {
               </button>
             </div>
           </div>
-          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} onExportDocx={handleExportDocx} onExportPdf={handleExportPdf} />
+          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} onExportDocx={handleExportDocx} />
         </div>
       ) : (
         <div className="flex flex-1 overflow-hidden">
@@ -236,7 +210,7 @@ export default function EditorLayout(): React.JSX.Element {
               {currentPage === 1 ? <Page1 /> : <Page2 />}
             </PageViewer>
           </div>
-          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} onExportDocx={handleExportDocx} onExportPdf={handleExportPdf} />
+          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} onExportDocx={handleExportDocx} />
         </div>
       )}
     </div>
