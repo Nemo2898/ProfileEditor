@@ -68,3 +68,24 @@ export async function showSaveDocxDialog(win: BrowserWindow): Promise<string | n
   }
   return path
 }
+
+/**
+ * 另存为 .pdf 对话框 → 返回选中路径或 null
+ */
+export async function showSavePdfDialog(win: BrowserWindow): Promise<string | null> {
+  const result = await dialog.showSaveDialog(win, {
+    title: '导出 PDF',
+    defaultPath: '新建档案.pdf',
+    filters: [
+      { name: 'PDF 文档', extensions: ['pdf'] }
+    ]
+  })
+  if (result.canceled || !result.filePath) {
+    return null
+  }
+  let path = result.filePath
+  if (!path.endsWith('.pdf')) {
+    path += '.pdf'
+  }
+  return path
+}

@@ -23,6 +23,9 @@ const api = {
   /** 导出 DOCX 对话框 → 返回路径或 null */
   dialogSaveDocx: (): Promise<string | null> => ipcRenderer.invoke('dialog-save-docx'),
 
+  /** 导出 PDF 对话框 → 返回路径或 null */
+  dialogSavePdf: (): Promise<string | null> => ipcRenderer.invoke('dialog-save-pdf'),
+
   /** 窗口最小化 */
   windowMinimize: (): Promise<void> => ipcRenderer.invoke('window-minimize'),
 
@@ -35,6 +38,10 @@ const api = {
   /** 导出 DOCX：传入档案数据 + 输出路径 → 写 .docx */
   exportDocx: (data: Record<string, unknown>, outputPath: string): Promise<{ success: boolean; error?: string }> =>
     ipcRenderer.invoke('export-docx', data, outputPath),
+
+  /** 导出 PDF：传入档案数据 + 输出路径 → 写 .pdf */
+  exportPdf: (data: Record<string, unknown>, outputPath: string): Promise<{ success: boolean; error?: string }> =>
+    ipcRenderer.invoke('export-pdf', data, outputPath),
 
   /** 监听窗口状态变化 */
   onWindowStateChange: (callback: (maximized: boolean) => void): (() => void) => {
