@@ -28,7 +28,7 @@
 
 ```xml
 <Person>
-  <XingMing>黄李哲</XingMing>
+  <XingMing>小明</XingMing>
   <XingBie>男</XingBie>
   <ChuShengNianYue>2004.10.24</ChuShengNianYue>
   <JiSuanNianLingShiJian>2026.08</JiSuanNianLingShiJian>
