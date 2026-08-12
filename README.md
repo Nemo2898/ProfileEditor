@@ -42,7 +42,7 @@
 
 - **Windows**：运行 `RMeditor-1.0.0-setup.exe`
 - **Linux**：`dpkg -i RMeditor-1.0.0.deb`，或直接运行 `RMeditor-1.0.0.AppImage`
-- **macOS**：暂不提供（国产化要求）
+- **macOS**：暂不提供（信创要求）
 
 ## 开发
 
