@@ -1,7 +1,7 @@
 {
-  "name": "profile_editor",
+  "name": "rmbeditor",
   "version": "1.0.0",
-  "description": "An offline profile editor for xml based personal profiles.",
+  "description": "RMBeditor — 离线干部任免审批表档案编辑器",
   "main": "./out/main/index.js",
   "author": "",
   "homepage": "https://electron-vite.org",
@@ -22,15 +22,12 @@
     "build:linux": "electron-vite build && electron-builder --linux"
   },
   "dependencies": {
-    "@electron-toolkit/preload": "^3.0.2",
     "@electron-toolkit/utils": "^4.0.0",
     "docxtemplater": "^3.69.0",
     "docxtemplater-image-module-free": "^1.1.1",
     "fast-xml-parser": "^5.9.3",
     "lucide-react": "^1.21.0",
     "pizzip": "^3.2.0",
-    "pngjs": "^7.0.0",
-    "sharp": "^0.35.2",
     "zustand": "^5.0.14"
   },
   "devDependencies": {
@@ -55,5 +52,6 @@
     "tailwindcss": "^4.3.1",
     "typescript": "^5.9.3",
     "vite": "^7.2.6"
-  }
+  },
+  "productName": "RMBeditor"
 }
