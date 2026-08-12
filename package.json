@@ -1,7 +1,7 @@
 {
-  "name": "rmbeditor",
+  "name": "rmeditor",
   "version": "1.0.0",
-  "description": "RMBeditor — 离线干部任免审批表档案编辑器",
+  "description": "RMeditor — 离线干部任免审批表档案编辑器",
   "main": "./out/main/index.js",
   "author": "",
   "homepage": "https://electron-vite.org",
@@ -53,5 +53,5 @@
     "typescript": "^5.9.3",
     "vite": "^7.2.6"
   },
-  "productName": "RMBeditor"
+  "productName": "RMeditor"
 }

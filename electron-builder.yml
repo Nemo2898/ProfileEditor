@@ -1,5 +1,5 @@
-appId: com.rmbeditor.app
-productName: RMBeditor
+appId: com.rmeditor.app
+productName: RMeditor
 directories:
   buildResources: build
 files:
@@ -18,7 +18,7 @@ files:
 asarUnpack:
   - resources/**
 win:
-  executableName: rmbeditor
+  executableName: rmeditor
   target:
     - nsis
 nsis:
@@ -30,7 +30,7 @@ linux:
   target:
     - AppImage
     - deb
-  maintainer: RMBeditor
+  maintainer: RMeditor
   category: Utility
   synopsis: 干部任免审批表档案编辑器
   description: 离线编辑 .lrmx 个人档案并导出 Word 任免表

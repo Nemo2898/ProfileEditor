@@ -1,10 +1,10 @@
-# RMBeditor
+# RMeditor
 
 一个离线的《干部任免审批表》档案编辑器。把纸质表格搬进电脑：填表、改表、存档、一键导出 Word，全程不联网。
 
 ## 它解决什么问题
 
-干部档案是 XML 格式的（`.lrmx`），Word 打印要的是标准任免表样式。这两者平时是脱节的——要么手填 Word 模板，要么数据存了却导不出正规表格。RMBeditor 把这条链打通：
+干部档案是 XML 格式的（`.lrmx`），Word 打印要的是标准任免表样式。这两者平时是脱节的——要么手填 Word 模板，要么数据存了却导不出正规表格。RMeditor 把这条链打通：
 
 ```
 编辑档案（.lrmx）──→ 另存为 Word（.docx 任免表模板）
@@ -40,8 +40,8 @@
 
 ## 安装
 
-- **Windows**：运行 `RMBeditor-1.0.0-setup.exe`
-- **Linux**：`dpkg -i RMBeditor-1.0.0.deb`，或直接运行 `RMBeditor-1.0.0.AppImage`
+- **Windows**：运行 `RMeditor-1.0.0-setup.exe`
+- **Linux**：`dpkg -i RMeditor-1.0.0.deb`，或直接运行 `RMeditor-1.0.0.AppImage`
 - **macOS**：暂不提供
 
 ## 开发
