@@ -13,10 +13,10 @@ export default function Page2(): React.JSX.Element {
   })
   const setField = useArchiveStore((s) => s.setField)
   const addFamilyMember = useArchiveStore((s) => s.addFamilyMember)
-
-  if (!data) return <div className="p-4 text-slate-400 text-sm">未打开档案</div>
   const removeFamilyMember = useArchiveStore((s) => s.removeFamilyMember)
   const updateFamilyMember = useArchiveStore((s) => s.updateFamilyMember)
+
+  if (!data) return <div className="p-4 text-slate-400 text-sm">未打开档案</div>
 
   const family = data.JiaTingChengYuan.Item
 
@@ -93,10 +93,7 @@ export default function Page2(): React.JSX.Element {
           <tr>
             <td className={TH + ' w-[12%]'}>身份证号</td>
             <td className={TD + ' w-[38%]'}>
-              <TextInput
-                value={data.ShenFenZheng}
-                onChange={(v) => setField('ShenFenZheng', v)}
-              />
+              <TextInput value={data.ShenFenZheng} onChange={(v) => setField('ShenFenZheng', v)} />
             </td>
             <td className={TH + ' w-[12%]'}>呈报单位</td>
             <td className={TD + ' w-[38%]'}>
@@ -125,10 +122,7 @@ export default function Page2(): React.JSX.Element {
           <tr>
             <td className={TH}>填表人</td>
             <td className={TD} colSpan={3}>
-              <TextInput
-                value={data.TianBiaoRen}
-                onChange={(v) => setField('TianBiaoRen', v)}
-              />
+              <TextInput value={data.TianBiaoRen} onChange={(v) => setField('TianBiaoRen', v)} />
             </td>
           </tr>
         </tbody>

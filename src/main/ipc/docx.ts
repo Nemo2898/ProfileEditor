@@ -8,7 +8,7 @@ import { readFileSync, writeFileSync } from 'fs'
 import PizZip from 'pizzip'
 import Docxtemplater from 'docxtemplater'
 import ImageModule from 'docxtemplater-image-module-free'
-import type { ArchivePerson } from '../../renderer/src/types/archive'
+import type { ArchivePerson, FamilyMember } from '../../renderer/src/types/archive'
 
 /** DOCX 渲染用的扁平家庭成员（年龄已计算） */
 export interface DocxFamilyMember {
@@ -47,7 +47,9 @@ export interface DocxRenderData {
   RenMianLiYou: string
   Item: DocxFamilyMember[]
   ChengBaoDanWei: string
-  TianBiaoShiJian: string
+  TianBiaoShiJian_Y: string
+  TianBiaoShiJian_M: string
+  TianBiaoShiJian_D: string
   TianBiaoRen: string
   ZhaoPian: string
 }
@@ -59,8 +61,12 @@ export interface DocxRenderData {
  */
 export function calcAge(birth: string, refDate: string): number {
   if (!birth || !refDate) return 0
-  const [by, bm] = String(birth).split('.').map(s => parseInt(s, 10))
-  const [ry, rm] = String(refDate).split('.').map(s => parseInt(s, 10))
+  const [by, bm] = String(birth)
+    .split('.')
+    .map((s) => parseInt(s, 10))
+  const [ry, rm] = String(refDate)
+    .split('.')
+    .map((s) => parseInt(s, 10))
   if (isNaN(by) || isNaN(bm) || isNaN(ry) || isNaN(rm)) return 0
   let age = ry - by
   if (rm < bm) age--
@@ -89,25 +95,38 @@ const EMPTY_DOCX_FAMILY: DocxFamilyMember = {
  */
 export function prepareDocxData(person: ArchivePerson): DocxRenderData {
   const refDate = String(person.JiSuanNianLingShiJian || '')
-  const rawItems = (person.JiaTingChengYuan?.Item ?? []).map(member => ({
+  const raw = person.JiaTingChengYuan?.Item
+  const rawItems: FamilyMember[] = Array.isArray(raw)
+    ? raw
+    : raw && typeof raw === 'object'
+      ? [raw as FamilyMember]
+      : []
+  const items = rawItems.map((member) => ({
     ChengWei: member.ChengWei,
     XingMing: member.XingMing,
     ChuShengRiQi: member.ChuShengRiQi?.replace(/\./g, '') ?? '',
-    NianLing: (refDate && member.ChuShengRiQi?.trim()) ? calcAge(member.ChuShengRiQi, refDate) : '',
+    NianLing: refDate && member.ChuShengRiQi?.trim() ? calcAge(member.ChuShengRiQi, refDate) : '',
     ZhengZhiMianMao: member.ZhengZhiMianMao,
     GongZuoDanWeiJiZhiWu: member.GongZuoDanWeiJiZhiWu
   }))
 
   // 补足到最少 10 行，多的保留
-  const paddedItems = rawItems.length >= FAMILY_ROW_COUNT
-    ? rawItems
-    : [...rawItems, ...Array.from({ length: FAMILY_ROW_COUNT - rawItems.length }, () => ({ ...EMPTY_DOCX_FAMILY }))]
+  const paddedItems =
+    items.length >= FAMILY_ROW_COUNT
+      ? items
+      : [
+          ...items,
+          ...Array.from({ length: FAMILY_ROW_COUNT - items.length }, () => ({
+            ...EMPTY_DOCX_FAMILY
+          }))
+        ]
 
   return {
     XingMing: person.XingMing,
     XingBie: person.XingBie,
     ChuShengNianYue: person.ChuShengNianYue?.replace(/\./g, '') ?? '',
-    NianLing: (refDate && person.ChuShengNianYue?.trim()) ? calcAge(person.ChuShengNianYue, refDate) : '',
+    NianLing:
+      refDate && person.ChuShengNianYue?.trim() ? calcAge(person.ChuShengNianYue, refDate) : '',
     MinZu: person.MinZu,
     JiGuan: person.JiGuan,
     ChuShengDi: person.ChuShengDi,
@@ -117,10 +136,24 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
     ZhuanYeJiShuZhiWu: person.ZhuanYeJiShuZhiWu,
     ShuXiZhuanYeYouHeZhuanChang: person.ShuXiZhuanYeYouHeZhuanChang,
     // 教育栏学位合并：学历/学位用 \n 分隔——docxtemplater 的 linebreaks:true 将 \n 转为 <w:br/>
-    QuanRiZhiJiaoYu_XueLi: [person.QuanRiZhiJiaoYu_XueLi, person.QuanRiZhiJiaoYu_XueWei].filter(Boolean).join('\n'),
-    QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: [person.QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi, person.QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi].filter(Boolean).join('\n'),
-    ZaiZhiJiaoYu_XueLi: [person.ZaiZhiJiaoYu_XueLi, person.ZaiZhiJiaoYu_XueWei].filter(Boolean).join('\n'),
-    ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: [person.ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi, person.ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi].filter(Boolean).join('\n'),
+    QuanRiZhiJiaoYu_XueLi: [person.QuanRiZhiJiaoYu_XueLi, person.QuanRiZhiJiaoYu_XueWei]
+      .filter(Boolean)
+      .join('\n'),
+    QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: [
+      person.QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi,
+      person.QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi
+    ]
+      .filter(Boolean)
+      .join('\n'),
+    ZaiZhiJiaoYu_XueLi: [person.ZaiZhiJiaoYu_XueLi, person.ZaiZhiJiaoYu_XueWei]
+      .filter(Boolean)
+      .join('\n'),
+    ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: [
+      person.ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi,
+      person.ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi
+    ]
+      .filter(Boolean)
+      .join('\n'),
     XianRenZhiWu: person.XianRenZhiWu,
     NiRenZhiWu: person.NiRenZhiWu,
     NiMianZhiWu: person.NiMianZhiWu,
@@ -130,7 +163,9 @@ export function prepareDocxData(person: ArchivePerson): DocxRenderData {
     RenMianLiYou: person.RenMianLiYou,
     Item: paddedItems,
     ChengBaoDanWei: person.ChengBaoDanWei,
-    TianBiaoShiJian: person.TianBiaoShiJian,
+    TianBiaoShiJian_Y: String(person.TianBiaoShiJian || '').split('.')[0] || '',
+    TianBiaoShiJian_M: String(person.TianBiaoShiJian || '').split('.')[1] || '',
+    TianBiaoShiJian_D: String(person.TianBiaoShiJian || '').split('.')[2] || '',
     TianBiaoRen: person.TianBiaoRen,
     ZhaoPian: person.ZhaoPian
   }
@@ -148,7 +183,10 @@ export function renderDocx(data: DocxRenderData, templatePath: string, outputPat
     fileType: 'docx',
     getImage(tagValue: string): Buffer {
       if (!tagValue) {
-        return Buffer.from('iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==', 'base64')
+        return Buffer.from(
+          'iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAADUlEQVR42mNk+M9QDwADhgGAWjR9awAAAABJRU5ErkJggg==',
+          'base64'
+        )
       }
       const b64 = tagValue.replace(/^data:image\/\w+;base64,/, '')
       return Buffer.from(b64, 'base64')

@@ -31,12 +31,7 @@ function checkMagicBytes(header: Uint8Array): string | null {
     return 'image/jpeg'
   }
   // PNG: 89 50 4E 47 0D 0A 1A 0A
-  if (
-    header[0] === 0x89 &&
-    header[1] === 0x50 &&
-    header[2] === 0x4e &&
-    header[3] === 0x47
-  ) {
+  if (header[0] === 0x89 && header[1] === 0x50 && header[2] === 0x4e && header[3] === 0x47) {
     return 'image/png'
   }
   return null
@@ -46,7 +41,12 @@ function checkMagicBytes(header: Uint8Array): string | null {
  * 计算等比居中裁剪的源区域
  * 目标 800×1000（4:5），不拉伸变形，多余部分从两侧/上下裁掉
  */
-function calcCover(sourceW: number, sourceH: number, targetW: number, targetH: number) {
+function calcCover(
+  sourceW: number,
+  sourceH: number,
+  targetW: number,
+  targetH: number
+): { sx: number; sy: number; sw: number; sh: number } {
   const targetRatio = targetW / targetH
   const sourceRatio = sourceW / sourceH
 

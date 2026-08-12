@@ -12,6 +12,9 @@ import type { ArchivePerson } from '../../renderer/src/types/archive'
 /** runtime_docs 目录缓存 */
 let runtimeDir = ''
 
+/** 渲染进程上报的未保存文档数（窗口关闭保护） */
+let dirtyCount = 0
+
 export function getCachedRuntimeDir(): string {
   return runtimeDir
 }
@@ -52,19 +55,22 @@ export function registerIpcHandlers(win: BrowserWindow): void {
   })
 
   // 导出 DOCX
-  ipcMain.handle('export-docx', async (_event, data: Record<string, unknown>, outputPath: string) => {
-    try {
-      const person = data as unknown as ArchivePerson
-      const renderData = prepareDocxData(person)
+  ipcMain.handle(
+    'export-docx',
+    async (_event, data: Record<string, unknown>, outputPath: string) => {
+      try {
+        const person = data as unknown as ArchivePerson
+        const renderData = prepareDocxData(person)
 
-      const templatePath = join(__dirname, '../../templates/output.docx')
-      renderDocx(renderData, templatePath, outputPath)
+        const templatePath = join(__dirname, '../../templates/output.docx')
+        renderDocx(renderData, templatePath, outputPath)
 
-      return { success: true }
-    } catch (err) {
-      return { success: false, error: String(err) }
+        return { success: true }
+      } catch (err) {
+        return { success: false, error: String(err) }
+      }
     }
-  })
+  )
 
   // 窗口控制
   ipcMain.handle('window-minimize', () => {
@@ -80,8 +86,18 @@ export function registerIpcHandlers(win: BrowserWindow): void {
   ipcMain.handle('window-close', () => {
     win.close()
   })
-  ipcMain.handle('window-is-maximized', () => {
-    return win.isMaximized()
+
+  // 渲染进程上报脏文档数（退出保护）
+  ipcMain.handle('set-dirty-count', (_event, count: number) => {
+    dirtyCount = count
+  })
+
+  // 有未保存修改时拦截窗口关闭，交由渲染进程确认
+  win.on('close', (event) => {
+    if (dirtyCount > 0) {
+      event.preventDefault()
+      win.webContents.send('before-close')
+    }
   })
 }
 

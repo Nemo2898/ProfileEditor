@@ -3,17 +3,26 @@
  * .lrmx 本质即 XML，内部结构与副本.xml 一致（<Person> 根 + 34 标签）
  */
 
-import { readFileSync, writeFileSync, renameSync, unlinkSync, existsSync, mkdirSync } from 'fs'
+import {
+  readFileSync,
+  writeFileSync,
+  renameSync,
+  unlinkSync,
+  existsSync,
+  mkdirSync,
+  readdirSync,
+  rmSync
+} from 'fs'
 import { join, dirname } from 'path'
 import { XMLParser, XMLBuilder } from 'fast-xml-parser'
-import { ALLOWED_PERSON_TAGS, ALLOWED_FAMILY_TAGS, validatePersonTags, validateFamilyMemberTags } from '../../renderer/src/types/archive'
+import { validatePersonTags, validateFamilyMemberTags } from '../../renderer/src/types/archive'
 
-/** XML 解析器 — 关闭实体处理 */
+/** XML 解析器 — 标准实体反转义（&amp;→&），不处理 HTML 实体 */
 const parser = new XMLParser({
   ignoreAttributes: false,
   attributeNamePrefix: '@_',
-  processEntities: false,
-  externalEntities: false,
+  processEntities: true,
+  htmlEntities: false,
   // 不处理 DTD
   allowBooleanAttributes: false
 })
@@ -83,9 +92,9 @@ export function openLrmx(filePath: string): object {
  * 保存数据 → 序列化 XML → 原子写入 .lrmx
  */
 export function saveLrmx(data: Record<string, unknown>, filePath: string): void {
-  // 序列化
-  const xmlDoc = { '?xml': { '@_version': '1.0', '@_encoding': 'utf-8' }, Person: data }
-  const xmlString = builder.build(xmlDoc) + '\n'
+  // 序列化：XML 声明手拼（builder 不支持 '?xml' 键，输出畸形 <?xml?>）
+  const xmlString =
+    '<?xml version="1.0" encoding="utf-8"?>\n' + builder.build({ Person: data }) + '\n'
 
   // 原子写：先写临时文件再 rename（防写一半崩溃损坏档案）
   const tmpPath = join(dirname(filePath), `.${Date.now()}.tmp`)
@@ -95,7 +104,11 @@ export function saveLrmx(data: Record<string, unknown>, filePath: string): void 
   } catch (err) {
     // 清理临时文件
     if (existsSync(tmpPath)) {
-      try { unlinkSync(tmpPath) } catch { /* ignore */ }
+      try {
+        unlinkSync(tmpPath)
+      } catch {
+        /* ignore */
+      }
     }
     throw err
   }
@@ -119,29 +132,54 @@ export function newBlankDoc(runtimeDir: string): string {
   const ts = Date.now()
   const tempPath = join(runtimeDir, `temp_${ts}.lrmx`)
 
-  // 计算年龄时间默认当天（联网时间不可控时退至本机时间）
+  // 计算年龄时间/填表时间默认当天（联网时间不可控时退至本机时间）
   const now = new Date()
   const jiSuanShiJian = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}`
+  const tianBiaoShiJian = `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`
 
   // 从空白模板填充（如果模板不存在就用空数据）
   const person = {
-    XingMing: '', XingBie: '', ChuShengNianYue: '', MinZu: '', JiGuan: '',
-    ChuShengDi: '', RuDangShiJian: '', CanJiaGongZuoShiJian: '',
-    JianKangZhuangKuang: '', ZhuanYeJiShuZhiWu: '', ShuXiZhuanYeYouHeZhuanChang: '',
-    QuanRiZhiJiaoYu_XueLi: '', QuanRiZhiJiaoYu_XueWei: '',
-    QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '', QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '',
-    ZaiZhiJiaoYu_XueLi: '', ZaiZhiJiaoYu_XueWei: '',
-    ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '', ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '',
-    XianRenZhiWu: '', NiRenZhiWu: '', NiMianZhiWu: '',
-    JianLi: '', JiangChengQingKuang: '', NianDuKaoHeJieGuo: '', RenMianLiYou: '',
+    XingMing: '',
+    XingBie: '',
+    ChuShengNianYue: '',
+    MinZu: '',
+    JiGuan: '',
+    ChuShengDi: '',
+    RuDangShiJian: '',
+    CanJiaGongZuoShiJian: '',
+    JianKangZhuangKuang: '',
+    ZhuanYeJiShuZhiWu: '',
+    ShuXiZhuanYeYouHeZhuanChang: '',
+    QuanRiZhiJiaoYu_XueLi: '',
+    QuanRiZhiJiaoYu_XueWei: '',
+    QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '',
+    QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '',
+    ZaiZhiJiaoYu_XueLi: '',
+    ZaiZhiJiaoYu_XueWei: '',
+    ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '',
+    ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '',
+    XianRenZhiWu: '',
+    NiRenZhiWu: '',
+    NiMianZhiWu: '',
+    JianLi: '',
+    JiangChengQingKuang: '',
+    NianDuKaoHeJieGuo: '',
+    RenMianLiYou: '',
     JiaTingChengYuan: {
       Item: Array.from({ length: 10 }, () => ({
-        ChengWei: '', XingMing: '', ChuShengRiQi: '',
-        ZhengZhiMianMao: '', GongZuoDanWeiJiZhiWu: ''
+        ChengWei: '',
+        XingMing: '',
+        ChuShengRiQi: '',
+        ZhengZhiMianMao: '',
+        GongZuoDanWeiJiZhiWu: ''
       }))
     },
-    ChengBaoDanWei: '', JiSuanNianLingShiJian: jiSuanShiJian, TianBiaoShiJian: '',
-    TianBiaoRen: '', ShenFenZheng: '', ZhaoPian: '',
+    ChengBaoDanWei: '',
+    JiSuanNianLingShiJian: jiSuanShiJian,
+    TianBiaoShiJian: tianBiaoShiJian,
+    TianBiaoRen: '',
+    ShenFenZheng: '',
+    ZhaoPian: '',
     Version: '3.2.1.16'
   }
 
@@ -154,11 +192,12 @@ export function newBlankDoc(runtimeDir: string): string {
  */
 export function clearRuntimeDocs(runtimeDir: string): void {
   if (!existsSync(runtimeDir)) return
-  const { readdirSync, rmSync } = require('fs')
   const files = readdirSync(runtimeDir)
   for (const file of files) {
     try {
       rmSync(join(runtimeDir, file), { force: true })
-    } catch { /* ignore */ }
+    } catch {
+      /* ignore */
+    }
   }
 }

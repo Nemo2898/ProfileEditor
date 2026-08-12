@@ -17,7 +17,12 @@ interface TabBarProps {
   onClose: (id: string) => void
 }
 
-export default function TabBar({ tabs, activeId, onSwitch, onClose }: TabBarProps): React.JSX.Element {
+export default function TabBar({
+  tabs,
+  activeId,
+  onSwitch,
+  onClose
+}: TabBarProps): React.JSX.Element {
   return (
     <div className="flex items-center bg-slate-900 border-b border-slate-700 px-1 gap-0.5 select-none">
       {/* 页签列表 */}

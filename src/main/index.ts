@@ -7,6 +7,10 @@ import { join } from 'path'
 import { electronApp, optimizer, is } from '@electron-toolkit/utils'
 import { registerIpcHandlers, onQuit } from './ipc/index'
 
+if (process.platform === 'linux') {
+  app.commandLine.appendSwitch('disable-gpu-sandbox')
+}
+
 // 阻止多实例
 const gotLock = app.requestSingleInstanceLock()
 if (!gotLock) {

@@ -53,6 +53,7 @@ const ID_CHECK_CODES = ['1', '0', 'X', '9', '8', '7', '6', '5', '4', '3', '2']
 
 /**
  * 身份证号格式与校验位验证
+ * 支持 15 位老证（只查数字）和 18 位新证（查校验位）
  * 返回 null = 通过，否则返回错误信息
  */
 export function validateIdNumber(id: string): string | null {
@@ -60,8 +61,14 @@ export function validateIdNumber(id: string): string | null {
   if (trimmed.length === 0) {
     return null // 允许不填
   }
+  if (trimmed.length === 15) {
+    if (!/^\d{15}$/.test(trimmed)) {
+      return '身份证号 15 位老证必须为数字'
+    }
+    return null
+  }
   if (trimmed.length !== 18) {
-    return '身份证号必须为 18 位'
+    return '身份证号必须为 15 位或 18 位'
   }
   // 前 17 位必须全数字
   for (let i = 0; i < 17; i++) {

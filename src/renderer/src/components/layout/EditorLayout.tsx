@@ -2,7 +2,7 @@
  * EditorLayout — 主布局容器（左右分栏）
  */
 
-import { useCallback } from 'react'
+import { useCallback, useEffect } from 'react'
 import TitleBar from './TitleBar'
 import TabBar from './TabBar'
 import PageViewer from './PageViewer'
@@ -11,18 +11,22 @@ import Page1 from '../Page1'
 import Page2 from '../Page2'
 import { useArchiveStore } from '../../store/archive'
 import type { ArchivePerson } from '../../types/archive'
-import { validateBirthDate } from '../../utils/validators'
+import { validateBirthDate, validateIdNumber, validateFamilyMember } from '../../utils/validators'
 import { flashError } from '../../utils/flash'
 
-/** 保存前校验出生日期格式 */
-function validateSaveBirthDates(data: ArchivePerson): string | null {
+/** 保存前校验：出生日期 / 身份证号 / 家庭成员必填 */
+function validateBeforeSave(data: ArchivePerson): string | null {
   const err = validateBirthDate(data.ChuShengNianYue)
   if (err) return `本人出生年月：${err}`
+  const idErr = validateIdNumber(data.ShenFenZheng)
+  if (idErr) return `身份证号：${idErr}`
   for (let i = 0; i < (data.JiaTingChengYuan?.Item?.length ?? 0); i++) {
     const m = data.JiaTingChengYuan.Item[i]
     if (!m.ChengWei.trim() && !m.XingMing.trim() && !m.ChuShengRiQi.trim()) continue
     const ferr = validateBirthDate(m.ChuShengRiQi)
     if (ferr) return `家庭成员 ${i + 1}：${ferr}`
+    const memberErrs = validateFamilyMember(m, i)
+    if (memberErrs.length > 0) return memberErrs.join('; ')
   }
   return null
 }
@@ -36,6 +40,37 @@ export default function EditorLayout(): React.JSX.Element {
   const newDoc = useArchiveStore((s) => s.newDoc)
   const switchTab = useArchiveStore((s) => s.switchTab)
   const closeTab = useArchiveStore((s) => s.closeTab)
+
+  // 关闭页签前确认未保存修改
+  const handleCloseTab = useCallback(
+    (id: string) => {
+      const doc = useArchiveStore.getState().docs[id]
+      if (doc?.isDirty) {
+        const confirmed = window.confirm(`「${doc.label}」有未保存的修改，确定关闭吗？`)
+        if (!confirmed) return
+      }
+      closeTab(id)
+    },
+    [closeTab]
+  )
+
+  // 上报脏文档数给主进程（窗口关闭保护）
+  const hasDirty = useArchiveStore((s) => Object.values(s.docs).some((d) => d.isDirty))
+  useEffect(() => {
+    window.api.setDirtyCount?.(hasDirty ? 1 : 0)
+  }, [hasDirty])
+
+  // 主进程拦截窗口关闭 → 确认后放行
+  useEffect(() => {
+    if (!window.api.onBeforeClose) return
+    return window.api.onBeforeClose(() => {
+      const confirmed = window.confirm('有未保存的修改，确定退出吗？')
+      if (confirmed) {
+        window.api.setDirtyCount?.(0)
+        window.api.windowClose?.()
+      }
+    })
+  }, [])
 
   // TabBar 需要的 tab 列表
   const tabs = Object.values(docs).map((d) => ({
@@ -65,7 +100,7 @@ export default function EditorLayout(): React.JSX.Element {
         try {
           const person = (await window.api.openLrmx(path)) as unknown as ArchivePerson
           openDoc(path, person)
-        } catch (err) {
+        } catch {
           const base = path.split(/[/\\]/).pop() || path
           flashError(`解析失败，已跳过：${base}`)
         }
@@ -82,11 +117,16 @@ export default function EditorLayout(): React.JSX.Element {
     if (!doc) return
 
     const data = doc.data as unknown as ArchivePerson
-    const birthErr = validateSaveBirthDates(data)
-    if (birthErr) { flashError(birthErr); return }
+    const birthErr = validateBeforeSave(data)
+    if (birthErr) {
+      flashError(birthErr)
+      return
+    }
 
     let targetPath: string | null = doc.filePath
-    const isTemp = targetPath ? targetPath.includes('/runtime_docs/') || targetPath.includes('\\runtime_docs\\') : true
+    const isTemp = targetPath
+      ? targetPath.includes('/runtime_docs/') || targetPath.includes('\\runtime_docs\\')
+      : true
     if (!targetPath || isTemp) {
       targetPath = await window.api.dialogSave(data.XingMing?.trim() || undefined)
       if (!targetPath) return
@@ -104,7 +144,10 @@ export default function EditorLayout(): React.JSX.Element {
         const updated = state.docs[doc.id]
         if (updated) {
           useArchiveStore.setState({
-            docs: { ...state.docs, [doc.id]: { ...updated, filePath: targetPath, label, isDirty: false } }
+            docs: {
+              ...state.docs,
+              [doc.id]: { ...updated, filePath: targetPath, label, isDirty: false }
+            }
           })
         }
       } else {
@@ -122,8 +165,11 @@ export default function EditorLayout(): React.JSX.Element {
     if (!doc) return
 
     const data = doc.data as unknown as ArchivePerson
-    const birthErr = validateSaveBirthDates(data)
-    if (birthErr) { flashError(birthErr); return }
+    const birthErr = validateBeforeSave(data)
+    if (birthErr) {
+      flashError(birthErr)
+      return
+    }
 
     const targetPath = await window.api.dialogSave(data.XingMing?.trim() || undefined)
     if (!targetPath) return
@@ -138,7 +184,9 @@ export default function EditorLayout(): React.JSX.Element {
         )
         if (!result.success) {
           flashError('导出失败：' + (result.error || '未知错误'))
+          return
         }
+        // 导出不改动档案状态：不更新 filePath（避免后续保存把 XML 写进 docx）、不清脏标记
       } else {
         const result = await window.api.saveLrmx(
           doc.data as unknown as Record<string, unknown>,
@@ -146,16 +194,20 @@ export default function EditorLayout(): React.JSX.Element {
         )
         if (!result.success) {
           flashError('保存失败：' + (result.error || '未知错误'))
+          return
         }
-      }
-      // 更新标签
-      const label = targetPath.split(/[/\\]/).pop() || '档案.lrmx'
-      const state = useArchiveStore.getState()
-      const updated = state.docs[doc.id]
-      if (updated) {
-        useArchiveStore.setState({
-          docs: { ...state.docs, [doc.id]: { ...updated, filePath: targetPath, label, isDirty: false } }
-        })
+        // 更新标签 + 路径 + 清脏标记
+        const label = targetPath.split(/[/\\]/).pop() || '档案.lrmx'
+        const state = useArchiveStore.getState()
+        const updated = state.docs[doc.id]
+        if (updated) {
+          useArchiveStore.setState({
+            docs: {
+              ...state.docs,
+              [doc.id]: { ...updated, filePath: targetPath, label, isDirty: false }
+            }
+          })
+        }
       }
     } catch (err) {
       flashError((isDocx ? '导出' : '保存') + '失败：' + String(err))
@@ -165,12 +217,7 @@ export default function EditorLayout(): React.JSX.Element {
   return (
     <div className="flex flex-col h-screen bg-slate-200">
       <TitleBar />
-      <TabBar
-        tabs={tabs}
-        activeId={activeId}
-        onSwitch={switchTab}
-        onClose={closeTab}
-      />
+      <TabBar tabs={tabs} activeId={activeId} onSwitch={switchTab} onClose={handleCloseTab} />
 
       {tabs.length === 0 ? (
         /* 空状态 + ToolPanel */
@@ -187,7 +234,12 @@ export default function EditorLayout(): React.JSX.Element {
               </button>
             </div>
           </div>
-          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} />
+          <ToolPanel
+            onNew={handleNew}
+            onOpen={handleOpen}
+            onSave={handleSave}
+            onSaveAs={handleSaveAs}
+          />
         </div>
       ) : (
         <div className="flex flex-1 overflow-hidden">
@@ -196,7 +248,12 @@ export default function EditorLayout(): React.JSX.Element {
               {currentPage === 1 ? <Page1 /> : <Page2 />}
             </PageViewer>
           </div>
-          <ToolPanel onNew={handleNew} onOpen={handleOpen} onSave={handleSave} onSaveAs={handleSaveAs} />
+          <ToolPanel
+            onNew={handleNew}
+            onOpen={handleOpen}
+            onSave={handleSave}
+            onSaveAs={handleSaveAs}
+          />
         </div>
       )}
     </div>

@@ -16,25 +16,28 @@ export default function Page1(): React.JSX.Element {
   const setField = useArchiveStore((s) => s.setField)
   const fileInputRef = useRef<HTMLInputElement>(null)
 
-  const handlePhotoSelect = useCallback(async (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0]
-    if (!file) return
+  const handlePhotoSelect = useCallback(
+    async (e: React.ChangeEvent<HTMLInputElement>) => {
+      const file = e.target.files?.[0]
+      if (!file) return
 
-    if (!file.type.startsWith('image/')) {
-      flashError('请选择图片文件（JPEG / PNG）')
-      return
-    }
+      if (!file.type.startsWith('image/')) {
+        flashError('请选择图片文件（JPEG / PNG）')
+        return
+      }
 
-    try {
-      const cleanBase64 = await sanitizeImage(file, 0.8, 800, 1000)
-      setField('ZhaoPian', `data:image/png;base64,${cleanBase64}`)
-    } catch (err) {
-      flashError('证件照处理失败：' + String(err))
-    } finally {
-      // 重置 input 以允许重复选同一文件
-      if (fileInputRef.current) fileInputRef.current.value = ''
-    }
-  }, [setField])
+      try {
+        const cleanBase64 = await sanitizeImage(file, 0.8, 800, 1000)
+        setField('ZhaoPian', `data:image/png;base64,${cleanBase64}`)
+      } catch (err) {
+        flashError('证件照处理失败：' + String(err))
+      } finally {
+        // 重置 input 以允许重复选同一文件
+        if (fileInputRef.current) fileInputRef.current.value = ''
+      }
+    },
+    [setField]
+  )
 
   if (!data) return <div className="p-4 text-slate-400 text-sm">未打开档案</div>
 
@@ -71,7 +74,11 @@ export default function Page1(): React.JSX.Element {
                 onChange={(v) => setField('ChuShengNianYue', v)}
               />
             </td>
-            <td className="border border-gray-400 text-center align-middle" rowSpan={5} style={{ width: '16%' }}>
+            <td
+              className="relative border border-gray-400 text-center align-middle"
+              rowSpan={5}
+              style={{ width: '16%' }}
+            >
               <input
                 ref={fileInputRef}
                 type="file"
@@ -87,10 +94,20 @@ export default function Page1(): React.JSX.Element {
                   <img src={data.ZhaoPian} alt="证件照" className="w-full h-full object-cover" />
                 ) : (
                   <span className="text-xs text-gray-400">
-                    点此上传<br />证件照
+                    点此上传
+                    <br />
+                    证件照
                   </span>
                 )}
               </button>
+              {hasPhoto && (
+                <button
+                  onClick={() => setField('ZhaoPian', '')}
+                  className="absolute bottom-1 right-1 text-[10px] px-1.5 py-0.5 bg-red-500/80 text-white rounded hover:bg-red-600 cursor-pointer"
+                >
+                  删除照片
+                </button>
+              )}
             </td>
           </tr>
 
@@ -225,24 +242,15 @@ export default function Page1(): React.JSX.Element {
           <tr>
             <td className={TH}>现任职务</td>
             <td className={TD}>
-              <TextInput
-                value={data.XianRenZhiWu}
-                onChange={(v) => setField('XianRenZhiWu', v)}
-              />
+              <TextInput value={data.XianRenZhiWu} onChange={(v) => setField('XianRenZhiWu', v)} />
             </td>
             <td className={TH}>拟任职务</td>
             <td className={TD}>
-              <TextInput
-                value={data.NiRenZhiWu}
-                onChange={(v) => setField('NiRenZhiWu', v)}
-              />
+              <TextInput value={data.NiRenZhiWu} onChange={(v) => setField('NiRenZhiWu', v)} />
             </td>
             <td className={TH}>拟免职务</td>
             <td className={TD}>
-              <TextInput
-                value={data.NiMianZhiWu}
-                onChange={(v) => setField('NiMianZhiWu', v)}
-              />
+              <TextInput value={data.NiMianZhiWu} onChange={(v) => setField('NiMianZhiWu', v)} />
             </td>
           </tr>
 

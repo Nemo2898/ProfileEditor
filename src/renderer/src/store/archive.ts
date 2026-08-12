@@ -13,49 +13,93 @@ function nowYYYYMM(): string {
   return `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}`
 }
 
+function nowYYYYMMDD(): string {
+  const now = new Date()
+  return `${now.getFullYear()}.${String(now.getMonth() + 1).padStart(2, '0')}.${String(now.getDate()).padStart(2, '0')}`
+}
+
 function blankPerson(): ArchivePerson {
   return {
-    XingMing: '', XingBie: '', ChuShengNianYue: '', MinZu: '', JiGuan: '',
-    ChuShengDi: '', RuDangShiJian: '', CanJiaGongZuoShiJian: '',
-    JianKangZhuangKuang: '', ZhuanYeJiShuZhiWu: '', ShuXiZhuanYeYouHeZhuanChang: '',
-    QuanRiZhiJiaoYu_XueLi: '', QuanRiZhiJiaoYu_XueWei: '',
-    QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '', QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '',
-    ZaiZhiJiaoYu_XueLi: '', ZaiZhiJiaoYu_XueWei: '',
-    ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '', ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '',
-    XianRenZhiWu: '', NiRenZhiWu: '', NiMianZhiWu: '',
-    JianLi: '', JiangChengQingKuang: '', NianDuKaoHeJieGuo: '', RenMianLiYou: '',
+    XingMing: '',
+    XingBie: '',
+    ChuShengNianYue: '',
+    MinZu: '',
+    JiGuan: '',
+    ChuShengDi: '',
+    RuDangShiJian: '',
+    CanJiaGongZuoShiJian: '',
+    JianKangZhuangKuang: '',
+    ZhuanYeJiShuZhiWu: '',
+    ShuXiZhuanYeYouHeZhuanChang: '',
+    QuanRiZhiJiaoYu_XueLi: '',
+    QuanRiZhiJiaoYu_XueWei: '',
+    QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '',
+    QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '',
+    ZaiZhiJiaoYu_XueLi: '',
+    ZaiZhiJiaoYu_XueWei: '',
+    ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '',
+    ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '',
+    XianRenZhiWu: '',
+    NiRenZhiWu: '',
+    NiMianZhiWu: '',
+    JianLi: '',
+    JiangChengQingKuang: '',
+    NianDuKaoHeJieGuo: '',
+    RenMianLiYou: '',
     JiaTingChengYuan: { Item: Array.from({ length: 10 }, () => ({ ...EMPTY_FAMILY_MEMBER })) },
-    ChengBaoDanWei: '', JiSuanNianLingShiJian: nowYYYYMM(), TianBiaoShiJian: '',
-    TianBiaoRen: '', ShenFenZheng: '', ZhaoPian: '',
+    ChengBaoDanWei: '',
+    JiSuanNianLingShiJian: nowYYYYMM(),
+    TianBiaoShiJian: nowYYYYMMDD(),
+    TianBiaoRen: '',
+    ShenFenZheng: '',
+    ZhaoPian: '',
     Version: '3.2.1.16'
   }
 }
 
 /* ---- 字段标签（供 UI 使用）---- */
 export const FIELD_LABELS: Record<string, string> = {
-  XingMing: '姓名', XingBie: '性别', ChuShengNianYue: '出生年月',
-  MinZu: '民族', JiGuan: '籍贯', ChuShengDi: '出生地',
-  RuDangShiJian: '入党时间', CanJiaGongZuoShiJian: '参加工作时间',
-  JianKangZhuangKuang: '健康状况', ZhuanYeJiShuZhiWu: '专业技术职务',
+  XingMing: '姓名',
+  XingBie: '性别',
+  ChuShengNianYue: '出生年月',
+  MinZu: '民族',
+  JiGuan: '籍贯',
+  ChuShengDi: '出生地',
+  RuDangShiJian: '入党时间',
+  CanJiaGongZuoShiJian: '参加工作时间',
+  JianKangZhuangKuang: '健康状况',
+  ZhuanYeJiShuZhiWu: '专业技术职务',
   ShuXiZhuanYeYouHeZhuanChang: '熟悉专业有何专长',
   QuanRiZhiJiaoYu_XueLi: '全日制教育—学历',
   QuanRiZhiJiaoYu_XueWei: '全日制教育—学位',
   QuanRiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '全日制教育—毕业院校系',
   QuanRiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '全日制教育—学位毕业院校系',
-  ZaiZhiJiaoYu_XueLi: '在职教育—学历', ZaiZhiJiaoYu_XueWei: '在职教育—学位',
+  ZaiZhiJiaoYu_XueLi: '在职教育—学历',
+  ZaiZhiJiaoYu_XueWei: '在职教育—学位',
   ZaiZhiJiaoYu_XueLi_BiYeYuanXiaoXi: '在职教育—毕业院校系',
   ZaiZhiJiaoYu_XueWei_BiYeYuanXiaoXi: '在职教育—学位毕业院校系',
-  XianRenZhiWu: '现任职务', NiRenZhiWu: '拟任职务', NiMianZhiWu: '拟免职务',
-  JianLi: '简历', JiangChengQingKuang: '奖惩情况',
-  NianDuKaoHeJieGuo: '年度考核结果', RenMianLiYou: '任免理由',
-  ChengBaoDanWei: '呈报单位', JiSuanNianLingShiJian: '计算年龄时间',
-  TianBiaoShiJian: '填表时间', TianBiaoRen: '填表人',
-  ShenFenZheng: '身份证号', ZhaoPian: '证件照', Version: '版本'
+  XianRenZhiWu: '现任职务',
+  NiRenZhiWu: '拟任职务',
+  NiMianZhiWu: '拟免职务',
+  JianLi: '简历',
+  JiangChengQingKuang: '奖惩情况',
+  NianDuKaoHeJieGuo: '年度考核结果',
+  RenMianLiYou: '任免理由',
+  ChengBaoDanWei: '呈报单位',
+  JiSuanNianLingShiJian: '计算年龄时间',
+  TianBiaoShiJian: '填表时间',
+  TianBiaoRen: '填表人',
+  ShenFenZheng: '身份证号',
+  ZhaoPian: '证件照',
+  Version: '版本'
 }
 
 export const FAMILY_LABELS: Record<string, string> = {
-  ChengWei: '称谓', XingMing: '姓名', ChuShengRiQi: '出生日期',
-  ZhengZhiMianMao: '政治面貌', GongZuoDanWeiJiZhiWu: '工作单位及职务'
+  ChengWei: '称谓',
+  XingMing: '姓名',
+  ChuShengRiQi: '出生日期',
+  ZhengZhiMianMao: '政治面貌',
+  GongZuoDanWeiJiZhiWu: '工作单位及职务'
 }
 
 /* ---- DocState ---- */
@@ -99,12 +143,21 @@ export const useArchiveStore = create<ArchiveStore>((set, get) => {
     openDoc: (filePath, person) => {
       const id = String(Date.now())
       const label = filePath.split(/[/\\]/).pop() || '档案.lrmx'
-      // 家庭成员不足 10 行时补齐
-      const items = person.JiaTingChengYuan.Item
-      if (items.length < 10) {
-        const pad = Array.from({ length: 10 - items.length }, () => ({ ...EMPTY_FAMILY_MEMBER }))
-        person.JiaTingChengYuan = { Item: [...items, ...pad] }
-      }
+      // 家庭成员归一化：缺 JiaTingChengYuan → 空、单 <Item>（fast-xml-parser 解析为对象）→ 数组、不足 10 行补齐
+      const rawItems = person.JiaTingChengYuan?.Item
+      const items = Array.isArray(rawItems)
+        ? rawItems
+        : rawItems && typeof rawItems === 'object'
+          ? [rawItems]
+          : []
+      const padded =
+        items.length >= 10
+          ? items
+          : [
+              ...items,
+              ...Array.from({ length: 10 - items.length }, () => ({ ...EMPTY_FAMILY_MEMBER }))
+            ]
+      person.JiaTingChengYuan = { Item: padded }
       set((state) => ({
         docs: {
           ...state.docs,
@@ -215,7 +268,11 @@ export const useArchiveStore = create<ArchiveStore>((set, get) => {
         return {
           docs: {
             ...state.docs,
-            [doc.id]: { ...doc, data: { ...doc.data, JiaTingChengYuan: { Item: items } }, isDirty: true }
+            [doc.id]: {
+              ...doc,
+              data: { ...doc.data, JiaTingChengYuan: { Item: items } },
+              isDirty: true
+            }
           }
         }
       }),
@@ -230,7 +287,11 @@ export const useArchiveStore = create<ArchiveStore>((set, get) => {
         return {
           docs: {
             ...state.docs,
-            [doc.id]: { ...doc, data: { ...doc.data, JiaTingChengYuan: { Item: items } }, isDirty: true }
+            [doc.id]: {
+              ...doc,
+              data: { ...doc.data, JiaTingChengYuan: { Item: items } },
+              isDirty: true
+            }
           }
         }
       }),

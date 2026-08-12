@@ -28,7 +28,10 @@ export async function showOpenDialog(win: BrowserWindow): Promise<string[] | nul
  * @param win
  * @param defaultName 默认文件名（不含后缀），默认"新建档案"
  */
-export async function showSaveDialog(win: BrowserWindow, defaultName?: string): Promise<string | null> {
+export async function showSaveDialog(
+  win: BrowserWindow,
+  defaultName?: string
+): Promise<string | null> {
   const name = defaultName || '新建档案'
   const result = await dialog.showSaveDialog(win, {
     title: '另存为',

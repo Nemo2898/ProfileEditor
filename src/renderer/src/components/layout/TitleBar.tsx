@@ -38,10 +38,7 @@ export default function TitleBar(): React.JSX.Element {
         <span className="text-xs text-slate-400">档案编辑器</span>
       </div>
 
-      <div
-        className="flex h-full"
-        style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}
-      >
+      <div className="flex h-full" style={{ WebkitAppRegion: 'no-drag' } as React.CSSProperties}>
         <button
           onClick={handleMinimize}
           className="flex items-center justify-center w-11 h-full text-slate-400 hover:text-slate-200 hover:bg-slate-800 transition-colors cursor-pointer"

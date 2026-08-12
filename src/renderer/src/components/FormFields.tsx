@@ -23,7 +23,7 @@ export function TextInput({
     const el = ref.current
     if (el) {
       el.style.height = 'auto'
-      el.style.height = (el.scrollHeight + 1) + 'px'
+      el.style.height = el.scrollHeight + 1 + 'px'
     }
   }, [])
 
@@ -38,7 +38,10 @@ export function TextInput({
       style={{ caretColor: '#1f2937' }}
       rows={rows}
       value={value}
-      onChange={(e) => { onChange(e.target.value); autoGrow() }}
+      onChange={(e) => {
+        onChange(e.target.value)
+        autoGrow()
+      }}
     />
   )
 }
